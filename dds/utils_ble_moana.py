@@ -1,10 +1,9 @@
 import os
 import socket
 import time
-
 from dds.logs import l_i_
+from dds.utils_ble_lowell import ble_die, ble_ok, utils_ble_set_last_haul
 from mat.ddh_shared import get_dl_folder_path_from_mac
-from utils_ble_lowell import utils_ble_set_last_haul, ble_die, ble_ok
 
 
 def _progress_bar_poor(v):

@@ -37,7 +37,7 @@ def _e(s):
     print(s)
 
 
-def _s3_main():
+def _s3():
 
     _p('log file is {}'.format(_f))
     fol = get_dds_folder_path_dl_files()
@@ -66,7 +66,12 @@ def _s3_main():
     _e(rv.stderr)
 
 
-if __name__ == '__main__':
+def main():
     while 1:
-        _s3_main()
+        _s3()
         time.sleep(3600)
+
+
+# debug
+if __name__ == '__main__':
+    main()

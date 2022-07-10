@@ -68,7 +68,7 @@ def gps_clock_sync_if_bad(dt):
     dt_my = dt.replace(tzinfo=z_utc).astimezone(tz=z_my)
     t = str(dt_my)[:-6]
     if not linux_is_rpi():
-        l_e_('[ SYS ] not setting date on non-rpi')
+        l_e_('[ GPS ] not setting date on non-rpi')
         return
     return linux_set_datetime(t)
 

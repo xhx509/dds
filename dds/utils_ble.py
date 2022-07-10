@@ -19,6 +19,7 @@ from mat.ble.bluepy.rn4020_utils import utils_logger_is_rn4020
 from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, get_dl_folder_path_from_mac
 from settings.ctx import hook_purge_this_mac_dl_files_folder
 
+
 TIME_IGNORE_TOO_ERROR = 600
 TIME_IGNORE_ONE_ERROR = 30
 
