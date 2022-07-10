@@ -1,0 +1,14 @@
+07-10-22 06:47:22 | 
+
+
+[ CORE ] log created on 20220710064722
+07-10-22 06:47:22 | 
+
+
+[ CORE ] track log created on 20220710064722
+07-10-22 06:47:22 | [ CORE ] boot macs_black  = ['macs/black/ff-ff-ff-ff-ff-ff']
+07-10-22 06:47:22 | [ CORE ] boot macs_orange = ['macs/orange/aa-aa-aa-aa-aa-aa']
+07-10-22 06:47:22 | [ GPS ] dbg_hook_gps_dummy_measurement == 1
+07-10-22 06:47:24 | [ SYS ] not setting date on non-rpi
+07-10-22 06:47:30 | [ GPS ] dbg_hook_gps_dummy_measurement == 1
+07-10-22 06:47:31 | [ SYS ] not setting date on non-rpi
