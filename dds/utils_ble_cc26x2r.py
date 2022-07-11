@@ -206,7 +206,8 @@ def utils_ble_cc26x2r_interact(lc, g):
     # --------------------------------
     ble_ok('almost done')
     if not ble_li_gdo(lc):
-        sns_notify_dissolved_oxygen_zeros(lc.address)
+        lat, lon, _ = g
+        sns_notify_dissolved_oxygen_zeros(lc.address, lat, lon)
         ble_die('error ble_li_gdo')
 
     _cc26x2r_deploy(lc, ls, g)

@@ -6,7 +6,7 @@ import logging
 import time
 import subprocess as sp
 from mat.ddh_shared import get_dds_folder_path_logs
-
+from mat.utils import linux_app_write_pid
 
 date_fmt = "%Y-%b-%d %H:%M:%S"
 t = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -67,6 +67,6 @@ def main():
 
 
 if __name__ == '__main__':
-    # see all services -> systemctl list-units --type=service
+    linux_app_write_pid('dds-net')
     while 1:
         main()

@@ -1,29 +1,28 @@
 import datetime
+import glob
 import os
-import threading
+import pathlib
 import time
 import subprocess as sp
 from botocore.exceptions import EndpointConnectionError, ClientError
-
-from dds.db.db_sns import DbSNS
 from dds.logs import l_e_, l_i_
 from mat.aws.sns import get_aws_sns_client
 import json
-from mat.ddh_shared import get_dds_settings_file, ddh_get_json_vessel_name, ddh_get_commit, get_ddh_db_sns
+from mat.ddh_shared import dds_get_json_vessel_name, ddh_get_commit, \
+    get_dds_folder_path_sns, dds_get_commit, get_ddh_sns_force_file_flag
 from settings import ctx
 
 
-def _sns_notify(short_s, long_s):
-    topic_arn = os.getenv('DDH_AWS_SNS_TOPIC_ARN')
+g_last_notify = time.perf_counter()
+g_last_time_notify_hw_exception = time.perf_counter()
 
-    if topic_arn is None:
-        l_e_('[ SNS ] missing topic ARN')
-        return 1
 
-    if ':' not in topic_arn:
-        l_e_('[ SNS ] topic ARN malformed')
-        return 1
+def _sns_req():
+    flag = get_ddh_sns_force_file_flag()
+    pathlib.Path(flag).touch()
 
+
+def _sns_notify(topic_arn, short_s, long_s):
     _ = topic_arn.split(':')
     parsed_region = _[3]
 
@@ -47,84 +46,89 @@ def _sns_notify(short_s, long_s):
         return 1
 
 
-def _sns_notify_ddh_alive(still=False):
-    com = ddh_get_commit()
-    v = ddh_get_json_vessel_name()
-    t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    u = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    _ = 'BOOTED' if not still else 'STILL OPERATIONAL'
-    ddh_box_sn = os.getenv('DDH_BOX_SERIAL_NUMBER')
-    short_s = 'DDH v.{} - vessel {} - utc time {} -> {}'.format(com, v, u, _)
-    rv = sp.run('uptime', shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
-    long_s = 'DDH hardware serial number -> {}\n'.format(ddh_box_sn)
-    long_s += 'DDH hardware uptime -> {}'.format(rv.stdout.decode())
-    long_s += 'DDH local time -> {}\n'.format(t)
-    # todo > do a semaphore controlled GPS measure here
-    # lat = back['gps']['lat']
-    # lon = back['gps']['lon']
-    # long_s += 'DDH GPS position -> {},{}\n'.format(lat, lon)
-    rv = _sns_notify(short_s, long_s)
-    return rv
-
-
-def sns_notify_logger_error(short_s, long_s):
-    return _sns_notify(short_s, long_s)
-
-
-def sns_notify_ble_scan_exception():
-    v = ddh_get_json_vessel_name()
-    short_s = 'DDH {} got several scan BLE exceptions'.format(v)
-    long_s = 'Please check it'
-    return _sns_notify(short_s, long_s)
-
-
-def sns_notify_dissolved_oxygen_zeros(mac):
-    v = ddh_get_json_vessel_name()
-    short_s = 'DDH {} got oxygen as zeros for logger {}'.format(v, mac)
-    long_s = 'Please check it'
-    return _sns_notify(short_s, long_s)
-
-
-def main():
+def sns_serve():
     if not ctx.sns_en:
-        l_i_('[ SNS ] not enabled at boot')
+        l_i_('[ SNS ] not enabled')
         return
 
-    def _fxn_sns_logger_errors():
-        db = DbSNS(get_ddh_db_sns())
-        db.db_get()
-        v = ddh_get_json_vessel_name()
+    now = time.perf_counter()
+    global g_last_notify
+    time_to_notify = g_last_notify + 10 > now
+    flag = get_ddh_sns_force_file_flag()
+    if not time_to_notify and not os.path.isfile(flag):
+        return
 
-        # -----------------------------------------
-        # grab errors from SNS database
-        # num, addr, timestamp, desc, flag served
-        # -----------------------------------------
-        for each in db.get_records_by_non_served():
-            i, mac, t, desc, served = each
-            s = 'DDH {} logger error mac {}'.format(v, mac)
-            l_i_('[ SNS ] notifying {} -> {}'.format(s, desc))
+    topic_arn = os.getenv('DDH_AWS_SNS_TOPIC_ARN')
+    if topic_arn is None:
+        l_e_('[ SNS ] missing topic ARN')
+        return 1
 
-            # ---------------------------------------
-            # notify them via SNS, mark them as done
-            # ---------------------------------------
-            if sns_notify_logger_error(s, desc) == 0:
-                db.mark_as_served(mac, t, desc)
+    if ':' not in topic_arn:
+        l_e_('[ SNS ] topic ARN malformed')
+        return 1
 
-    def _sns_logger_errors():
-        _fxn_sns_logger_errors()
-        time.sleep(3600)
-
-    def _sns_ddh_alive():
-        _sns_notify_ddh_alive(still=False)
-        while 1:
-            _sns_notify_ddh_alive(still=True)
-            time.sleep(86400)
-
-    _se = threading.Thread(target=_sns_logger_errors)
-    _se.start()
-    _sa = threading.Thread(target=_sns_ddh_alive)
-    _sa.start()
+    g_last_notify = time.perf_counter()
+    fol = get_dds_folder_path_sns()
+    files = glob.glob('{}/*.sns'.format(fol))
+    for _ in files:
+        with open(_, 'r') as f:
+            d = json.load(f)
+            s = 'DDH {} - {}'
+            s.format(d['reason'], d['vessel'])
+        rv = _sns_notify(topic_arn, s, json.dumps(s))
+        if rv == 0:
+            l_i_('[ SNS ] served {}'.format(_))
+            os.unlink(_)
 
 
+def _sns_add(reason, lat, lon):
+    com_ddh = ddh_get_commit()
+    com_dds = dds_get_commit()
+    v = dds_get_json_vessel_name()
+    t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    u = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    ddh_box_sn = os.getenv('DDH_BOX_SERIAL_NUMBER')
+    rv_up = sp.run('uptime', shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
+    d = {
+        'reason': reason,
+        'vessel': v,
+        'ddh_commit': com_ddh,
+        'dds_commit': com_dds,
+        'utc_time': str(u),
+        'local_time': str(t),
+        'box_sn': ddh_box_sn,
+        'hw_uptime': rv_up.stdout.decode(),
+        'gps_position': '{},{}'.format(lat, lon)
+    }
+    fol = str(get_dds_folder_path_sns())
+    now = time.perf_counter()
+    path = '{}/{}.sns'.format(fol, now)
+    with open(path, 'w') as f:
+        json.dump(d, f)
 
 
+def sns_notify_logger_error(mac, lat, lon):
+    s = 'LOGGER_{}_TOO_MANY_ERRORS'.format(mac)
+    _sns_add(s, lat, lon)
+    _sns_req()
+
+
+def sns_notify_ble_scan_exception(lat, lon):
+    global g_last_time_notify_hw_exception
+    now = time.perf_counter()
+    if g_last_time_notify_hw_exception + 86400 > now:
+        return
+    g_last_time_notify_hw_exception += 86400
+    _sns_add('BLE_HARDWARE_MAY_BE_BAD', lat, lon)
+    _sns_req()
+
+
+def sns_notify_dissolved_oxygen_zeros(mac, lat, lon):
+    s = 'LOGGER_{}_OXYGEN_ERROR'.format(mac)
+    _sns_add(s, lat, lon)
+    _sns_req()
+
+
+def sns_notify_ddh_booted(lat, lon):
+    _sns_add('DDH_BOOTED', lat, lon)
+    _sns_req()

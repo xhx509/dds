@@ -5,7 +5,9 @@ import traceback
 import bluepy.btle as ble
 import time
 from dds.logs import l_e_, l_d_
-from dds.macs import macs_black, macs_orange
+from dds.macs import macs_black, macs_orange, rm_mac_black, rm_mac_orange, add_mac_orange, add_mac_black, \
+    is_mac_in_black, is_mac_in_orange
+from dds.sns import sns_notify_logger_error, sns_notify_ble_scan_exception
 from dds.utils_ble_cc26x2r import utils_ble_cc26x2r_interact
 from dds.utils_ble_lowell import AppBLEException
 from dds.utils_ble_moana import utils_ble_moana_interact
@@ -16,7 +18,8 @@ from mat.ble.bluepy.cc26x2r_utils import utils_logger_is_cc26x2r
 from mat.ble.bluepy.moana_logger_controller import utils_logger_is_moana, LoggerControllerMoana
 from mat.ble.bluepy.rn4020_logger_controller import LoggerControllerRN4020
 from mat.ble.bluepy.rn4020_utils import utils_logger_is_rn4020
-from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, get_dl_folder_path_from_mac
+from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, get_dl_folder_path_from_mac, \
+    ddh_get_macs_from_json_file
 from settings.ctx import hook_purge_this_mac_dl_files_folder
 
 
@@ -107,6 +110,7 @@ def _ble_scan(h) -> dict:
     except (ble.BTLEException, Exception) as e:
         _u('state_ble_hardware_error/')
         l_e_('exception -> {}'.format(e))
+        li = {}
 
     finally:
         return li
@@ -115,10 +119,11 @@ def _ble_scan(h) -> dict:
 def _ble_interact_w_logger(mac, info: str, h, g):
 
     # debug
-    hc_mac = '60:77:71:22:c8:6f'
-    mac = hc_mac
-    hc_info = 'DO-2'
-    info = hc_info
+    # l_d_('[ BLE ] forcing query of hardcoded mac')
+    # hc_mac = '60:77:71:22:c8:6f'
+    # mac = hc_mac
+    # hc_info = 'DO-2'
+    # info = hc_info
 
     # debug: delete THIS logger's existing files
     if hook_purge_this_mac_dl_files_folder:
@@ -131,6 +136,8 @@ def _ble_interact_w_logger(mac, info: str, h, g):
     sn = ddh_get_json_mac_dns(mac)
     _u('state_download/{}'.format(sn))
     rv = 0
+    s = '[ BLE ] querying sensor {} / mac {}'
+    print(s.format(sn, mac))
 
     try:
         if utils_logger_is_rn4020(mac, info):
@@ -157,6 +164,7 @@ def _ble_interact_w_logger(mac, info: str, h, g):
         e = '[ BLE] wireless exception {} -> {}'
         l_e_(e.format(ex, traceback.format_exc()))
         rv = 1
+        sns_notify_ble_scan_exception(lat, lon)
 
     finally:
         if lc:
@@ -169,19 +177,55 @@ def _ble_interact_w_logger(mac, info: str, h, g):
             h = 'history/add&{}&error&{}&{}&{}'
         _u(h.format(sn, lat, lon, dt))
 
+        # track logger errors
+        _add_logger_errors_to_sns_if_any(rv, mac, lat, lon)
 
-def ble_loop(_lat, _lon, _h, _d):
 
-    _u('ble_antenna_is/{}'.format(_d))
+g_logger_errors = {}
+
+
+def _add_logger_errors_to_sns_if_any(rv, mac, lat, lon):
+    if rv == 0:
+        rm_mac_black(mac)
+        rm_mac_orange(mac)
+        add_mac_black(mac)
+        return
+
+    if mac not in g_logger_errors:
+        g_logger_errors[mac] = 1
+        rm_mac_black(mac)
+        add_mac_orange(mac)
+        return
+
+    v = g_logger_errors[mac] + 1
+    if v > 5:
+        v = 5
+    if v == 5:
+        sns_notify_logger_error(mac, lat, lon)
+        rm_mac_orange(mac)
+        add_mac_black(mac)
+        _u('state_download_error/{}'.format(mac))
+    else:
+        rm_mac_orange(mac)
+        add_mac_orange(mac)
+        _u('state_download_warning/{}'.format(mac))
+
+
+def ble_loop(macs_mon, _lat, _lon, _dt, _h, _h_desc):
+
+    _u('ble_antenna_is/{}'.format(_h_desc))
 
     det = _ble_scan(0)
     b = macs_black()
     o = macs_orange()
+
     for mac, model in det.items():
-        if mac in b:
+        if mac not in macs_mon:
             continue
-        if mac in o:
+        if is_mac_in_black(mac, b):
+            continue
+        if is_mac_in_orange(mac, o):
             continue
 
-        g = (_lat, _lon)
+        g = (_lat, _lon, _dt)
         _ble_interact_w_logger(mac, model, _h, g)

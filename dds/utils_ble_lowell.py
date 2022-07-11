@@ -75,7 +75,7 @@ def ble_li_rm_already_have(lc, ls):
             rv = lc.ble_cmd_del(name)
             if not rv:
                 ble_die('failed del already had file {}'.format(name))
-            ble_ok('OK del had file {}'.format(name))
+            ble_ok('OK removing file {} from logger'.format(name))
             time.sleep(3)
 
 

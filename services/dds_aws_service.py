@@ -10,6 +10,7 @@ import subprocess as sp
 import logging
 import datetime
 
+from mat.utils import linux_app_write_pid
 
 date_fmt = "%Y-%b-%d %H:%M:%S"
 t = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -67,6 +68,7 @@ def _s3():
 
 
 def main():
+    linux_app_write_pid('dds-aws')
     while 1:
         _s3()
         time.sleep(3600)

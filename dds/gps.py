@@ -6,7 +6,7 @@ from mat.utils import linux_is_rpi, linux_set_datetime
 from settings import ctx as cu
 from settings.ctx import hook_gps_dummy_measurement
 from tzlocal import get_localzone
-from mat.ddh_shared import send_ddh_udp_gui as _u
+from mat.ddh_shared import send_ddh_udp_gui as _u, dds_get_json_vessel_name
 
 
 def gps_connect_shield():
@@ -36,7 +36,8 @@ def gps_connect_shield():
 def gps_measure(timeout=3):
 
     if cu.hook_gps_error_measurement_forced:
-        l_d_('[ GPS ] dbg_hook_gps_error_measurement_forced == 1')
+        _u('state_app_error_gps/')
+        l_d_('[ GPS ] hook_gps_error_measurement_forced == 1')
         return
 
     if cu.hook_gps_dummy_measurement or not linux_is_rpi():
@@ -56,6 +57,7 @@ def gps_measure(timeout=3):
             g[3] = '0'
         # float, float, datetime UTC, string
         return lat, lon, g[2], float(g[3])
+    _u('state_app_error_gps/')
 
 
 def gps_clock_sync_if_bad(dt):
@@ -99,7 +101,8 @@ def gps_tell_vessel_name():
     if g_last_time_told_vessel + 10 < now:
         # too recent, leave
         return
-    _u('boat_name/nora')
+    v = dds_get_json_vessel_name()
+    _u('boat_name/{}'.format(v))
     g_last_time_told_vessel = time.perf_counter()
 
 

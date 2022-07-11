@@ -1,7 +1,9 @@
+import os
 import threading
 import time
 from dds.logs import l_i_
-from mat.ddh_shared import get_dds_folder_path_dl_files, ddh_convert_lid_to_csv
+from mat.ddh_shared import get_dds_folder_path_dl_files, ddh_convert_lid_to_csv, get_dds_is_ble_downloading_flag
+from mat.utils import linux_app_write_pid
 
 
 def _cnv(m):
@@ -21,6 +23,11 @@ def _fxn():
 
 
 if __name__ == '__main__':
+    linux_app_write_pid('dds-cnv')
+    flag = get_dds_is_ble_downloading_flag()
     while 1:
+        while os.path.isfile(flag):
+            l_i_('[ CNV ] not converting while BLE downloading')
+            time.sleep(60)
         _fxn()
         time.sleep(3600)

@@ -1,10 +1,12 @@
 import glob
 import os
+import pathlib
 
-from dds.logs import l_i_
+from dds.logs import l_i_, l_d_
 from dds.macs import macs_black, macs_orange
-from mat.ddh_shared import send_ddh_udp_gui, get_ddh_disabled_ble_file_flag, ddh_get_json_moving_speed, \
-    ddh_get_json_app_type, get_ddh_app_override_file_flag, get_ddh_black_macs_purge_file_flag
+from mat.ddh_shared import send_ddh_udp_gui, get_ddh_disabled_ble_file_flag, dds_get_json_moving_speed, \
+    ddh_get_json_app_type, get_ddh_app_override_file_flag, get_ddh_black_macs_purge_file_flag, \
+    get_dds_is_ble_downloading_flag
 from mat.utils import linux_is_rpi
 import subprocess as sp
 
@@ -90,10 +92,12 @@ def op_conditions_met(knots) -> bool:
 
     flag = get_ddh_black_macs_purge_file_flag()
     if os.path.isfile(flag):
+        l_d_('[ BLE ] flag macs purge was set')
         for f in glob.glob('macs/black/*'):
             os.unlink(f)
         for f in glob.glob('macs/orange/*'):
             os.unlink(f)
+        os.unlink(flag)
 
     flag = get_ddh_disabled_ble_file_flag()
     if os.path.isfile(flag):
@@ -107,7 +111,7 @@ def op_conditions_met(knots) -> bool:
         return True
 
     l_h = ddh_get_json_app_type()
-    speed_range = ddh_get_json_moving_speed()
+    speed_range = dds_get_json_moving_speed()
 
     # case: lobster trap, no speed requirement
     if not l_h:
@@ -166,3 +170,14 @@ def ble_get_antenna_type():
 
     # fallback
     return 0, 'internal'
+
+
+def ble_flag_dl():
+    flag = get_dds_is_ble_downloading_flag()
+    pathlib.Path(flag).touch()
+
+
+def ble_un_flag_dl():
+    flag = get_dds_is_ble_downloading_flag()
+    if os.path.isfile(flag):
+        os.unlink(flag)

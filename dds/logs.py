@@ -3,7 +3,7 @@ import queue
 import threading
 import time
 from pathlib import Path
-from mat.ddh_shared import ddh_get_json_vessel_name, get_dds_folder_path_dl_files
+from mat.ddh_shared import dds_get_json_vessel_name, get_dds_folder_path_dl_files
 from mat.utils import PrintColors as PC
 
 
@@ -93,7 +93,7 @@ def log_core_start_at_boot():
 
 
 def log_tracking_start_at_boot():
-    v = ddh_get_json_vessel_name().replace(' ', '_')
+    v = dds_get_json_vessel_name().replace(' ', '_')
     d = str(get_dds_folder_path_dl_files())
     time.sleep(.1)
     _tracker_init(d, v)
