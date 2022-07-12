@@ -3,13 +3,16 @@
 
 import os
 import time
+
+from dds.logs import l_i_
 from mat.ddh_shared import send_ddh_udp_gui as _u, \
     get_dds_folder_path_dl_files, \
-    get_dds_folder_path_logs
+    get_dds_folder_path_logs, get_dds_aws_has_something_to_do_flag
 import subprocess as sp
 import logging
 import datetime
 
+from mat.dds_states import STATE_DDS_NOTIFY_CLOUD
 from mat.utils import linux_app_write_pid
 
 date_fmt = "%Y-%b-%d %H:%M:%S"
@@ -48,7 +51,7 @@ def _s3():
 
     if _k is None or _s is None or _n is None:
         _p('missing credentials')
-        _u('cloud/bad')
+        _u('{}/bad'.format(STATE_DDS_NOTIFY_CLOUD))
         return
     _n = 'bkt-' + _n
 
@@ -58,20 +61,36 @@ def _s3():
     rv = sp.run(c, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
     _t = datetime.datetime.now()
     if rv.returncode == 0:
-        _u('cloud/OK')
+        _u('{}/OK'.format(STATE_DDS_NOTIFY_CLOUD))
         _p('good cloud sync on {}'.format(_t))
         _p(rv.stdout)
         return
-    _u('cloud/ERR')
+    _u('{}/ERR'.format(STATE_DDS_NOTIFY_CLOUD))
     _e('BAD cloud sync on {}'.format(_t))
     _e(rv.stderr)
 
 
+def _aws_flag() -> bool:
+    path = str(get_dds_aws_has_something_to_do_flag())
+    return os.path.exists(path)
+
+
 def main():
+
+    i = 0
+    p = str(get_dds_aws_has_something_to_do_flag())
     linux_app_write_pid('dds-aws')
+
     while 1:
-        _s3()
-        time.sleep(3600)
+        f = _aws_flag()
+        if i % 60 == 0 or f:
+            if f:
+                l_i_('[ AWS ] flag found')
+                os.unlink(p)
+            _s3()
+            i = 0
+        time.sleep(60)
+        i += 1
 
 
 # debug

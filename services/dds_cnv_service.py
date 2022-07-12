@@ -26,8 +26,10 @@ if __name__ == '__main__':
     linux_app_write_pid('dds-cnv')
     flag = get_dds_is_ble_downloading_flag()
     while 1:
-        while os.path.isfile(flag):
+        break_t = 0
+        while os.path.isfile(flag) and break_t < 5:
             l_i_('[ CNV ] not converting while BLE downloading')
             time.sleep(60)
+            break_t += 1
         _fxn()
         time.sleep(3600)

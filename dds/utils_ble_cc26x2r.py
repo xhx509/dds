@@ -1,11 +1,13 @@
 import os
 import time
-from dds.logs import l_i_, l_e_, l_d_
+from dds.logs import l_i_, l_e_, l_d_, l_w_
 from dds.sns import sns_notify_dissolved_oxygen_zeros
 from dds.utils_ble_lowell import *
 from mat.crc import calculate_local_file_crc
+from mat.dds_states import STATE_DDS_BLE_DOWNLOAD_SLOW, STATE_DDS_BLE_DEPLOY_FALLBACK, STATE_DDS_NOTIFY_PLOT_REQUEST
 from settings import ctx
 from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, get_dl_folder_path_from_mac
+from settings.ctx import hook_ble_gdo_dummy_measurement
 
 
 def _cc26x2r_rm_null_files(lc, ls):
@@ -39,7 +41,7 @@ def _cc26x2r_deploy(lc, ls: dict, g):
     # ------------------------------------------------
     # missing MAT.cfg file, we need a whole re-deploy
     # ------------------------------------------------
-    _u('state_deploy_fallback/')
+    _u(STATE_DDS_BLE_DEPLOY_FALLBACK)
     l_i_('[ BLE ] --- logger has no MAT.cfg, providing one ---')
     if not lc.ble_cmd_stp():
         ble_die('error in re-deploy STP')
@@ -101,9 +103,9 @@ def _cc26x2r_dwg_files(lc, ls) -> tuple:
         # -----------------------------------
         # 3 DWL command retries per file :)
         # -----------------------------------
+        time.sleep(1)
         path = get_dl_folder_path_from_mac(lc.address) / name
         for i in range(3):
-            time.sleep(3)
             _t = time.perf_counter()
             data = lc.ble_cmd_dwl(size)
             _t = time.perf_counter() - _t
@@ -115,11 +117,12 @@ def _cc26x2r_dwg_files(lc, ls) -> tuple:
             if i == 2:
                 return False, dl_ones_ok
             l_d_('[ BLE ] re-trying download {}'.format(name))
+            time.sleep(1)
 
         # ---------------------------------
         # check file remote and local CRC
         # ---------------------------------
-        time.sleep(3)
+        time.sleep(1)
         crc = lc.ble_cmd_crc(name)
         l_crc = calculate_local_file_crc(path)
         if crc != l_crc:
@@ -134,7 +137,7 @@ def _cc26x2r_dwg_files(lc, ls) -> tuple:
         # ------------------------------------
         # delete single file remotely
         # -------------------------------------
-        time.sleep(3)
+        time.sleep(1)
         ble_ok('100% downloaded {}'.format(name))
         if not lc.ble_cmd_del(name):
             l_e_('error deleting file {}'.format(name))
@@ -192,7 +195,7 @@ def utils_ble_cc26x2r_interact(lc, g):
     lc.ble_cmd_slw_ensure('off')
     rv, dl = _cc26x2r_dwg_files(lc, ls)
     if not rv:
-        _u('state_download_slow/{}'.format(sn))
+        _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_SLOW, sn))
         l_e_('[ BLE ] error download files, normal mode')
         l_i_('[ BLE ] interact -> slow download mode')
         lc.ble_cmd_slw_ensure('on')
@@ -205,10 +208,14 @@ def utils_ble_cc26x2r_interact(lc, g):
     # re-deploy logger cc26x2r
     # --------------------------------
     ble_ok('almost done')
-    if not ble_li_gdo(lc):
-        lat, lon, _ = g
-        sns_notify_dissolved_oxygen_zeros(lc.address, lat, lon)
-        ble_die('error ble_li_gdo')
+    if hook_ble_gdo_dummy_measurement:
+        l_d_('[ BLE ] hook_ble_gdo_dummy_measurement')
+    else:
+        rv = ble_li_gdo(lc)
+        if not rv:
+            lat, lon, _ = g
+            sns_notify_dissolved_oxygen_zeros(lc.address, lat, lon)
+            ble_die('error ble_li_gdo')
 
     _cc26x2r_deploy(lc, ls, g)
     ble_li_rws(lc, g)
@@ -217,6 +224,6 @@ def utils_ble_cc26x2r_interact(lc, g):
     # PLOT only if we got some lid files
     # -----------------------------------
     if any(k.endswith('lid') for k in dl.keys()):
-        _u('plot_request/'.format(lc.address))
+        _u('{}/{}'.format(STATE_DDS_NOTIFY_PLOT_REQUEST, lc.address))
 
     return True

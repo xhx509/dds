@@ -52,8 +52,6 @@ def _rm_mac(c, m):
     m = m.replace(':', '-')
     fol = str(get_dds_folder_path_macs() / c)
     wc = '{}/{}@*'.format(fol, m)
-    print('rm wc', wc)
-    print('rm glob', glob.glob(wc))
     for f in glob.glob(wc):
         l_i_('[ MACS ] delete {}'.format(f))
         os.unlink(f)

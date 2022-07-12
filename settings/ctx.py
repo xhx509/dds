@@ -7,6 +7,7 @@ from dds.macs import macs_black, macs_orange
 from mat.ddh_shared import send_ddh_udp_gui, get_ddh_disabled_ble_file_flag, dds_get_json_moving_speed, \
     ddh_get_json_app_type, get_ddh_app_override_file_flag, get_ddh_black_macs_purge_file_flag, \
     get_dds_is_ble_downloading_flag
+from mat.dds_states import STATE_DDS_BLE_DISABLED, STATE_DDS_BLE_APP_GPS_ERROR_SPEED
 from mat.utils import linux_is_rpi
 import subprocess as sp
 
@@ -39,12 +40,13 @@ cell_shield_en = True
 
 
 # debug hooks :)
-hook_purge_black_macs_on_boot = False
-hook_purge_this_mac_dl_files_folder = False
 hook_ntp_force_error = False
 hook_gps_dummy_measurement = not linux_is_rpi()
 hook_gps_error_measurement_forced = False
 hook_ble_error_forced = False
+hook_ble_gdo_dummy_measurement = True
+hook_ble_purge_black_macs_on_boot = True
+hook_ble_purge_this_mac_dl_files_folder = False
 
 
 # to re-deploy
@@ -84,8 +86,8 @@ def macs_color_create_folder():
 def macs_color_show_at_boot():
     b = macs_black()
     o = macs_orange()
-    l_i_('[ CORE ] boot macs_black  = {}'.format(b))
-    l_i_('[ CORE ] boot macs_orange = {}'.format(o))
+    l_i_('[ BLE ] boot macs_black  = {}'.format(b))
+    l_i_('[ BLE ] boot macs_orange = {}'.format(o))
 
 
 def op_conditions_met(knots) -> bool:
@@ -101,12 +103,12 @@ def op_conditions_met(knots) -> bool:
 
     flag = get_ddh_disabled_ble_file_flag()
     if os.path.isfile(flag):
-        _u('state_ble_disabled/')
+        _u(STATE_DDS_BLE_DISABLED)
         return False
 
     flag = get_ddh_app_override_file_flag()
     if os.path.isfile(flag):
-        l_i_('[ CORE ] application override set')
+        l_i_('[ BLE ] application override set')
         os.unlink(flag)
         return True
 
@@ -123,7 +125,7 @@ def op_conditions_met(knots) -> bool:
     if l_h and valid_moving_range:
         return True
 
-    _u('state_app_error_speed/{}'.format(knots))
+    _u('{}/{}'.format(STATE_DDS_BLE_APP_GPS_ERROR_SPEED, knots))
 
 
 def _hci_is_up(i: int) -> bool:

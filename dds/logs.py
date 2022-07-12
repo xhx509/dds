@@ -89,7 +89,7 @@ def log_core_start_at_boot():
     _log_init(d)
     time.sleep(.1)
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    l_w_('\n\n\n[ CORE ] log created on {}'.format(now))
+    l_w_('\n\n\n[ BLE ] log created on {}'.format(now))
 
 
 def log_tracking_start_at_boot():
@@ -98,5 +98,5 @@ def log_tracking_start_at_boot():
     time.sleep(.1)
     _tracker_init(d, v)
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    l_w_('\n\n\n[ CORE ] track log created on {}'.format(now))
+    l_w_('\n\n\n[ BLE ] track log created on {}'.format(now))
 

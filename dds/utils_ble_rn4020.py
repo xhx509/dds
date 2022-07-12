@@ -7,6 +7,7 @@ from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns
 from dds.logs import l_i_, l_e_
 from mat.ddh_shared import get_dl_folder_path_from_mac
 from mat import data_file_factory
+from mat.dds_states import STATE_DDS_NOTIFY_PLOT_REQUEST
 
 
 def _get_files_rn4020(lc, ls):
@@ -119,6 +120,6 @@ def utils_ble_rn4020_interact(lc, g):
     # PLOT only if we got some lid files
     # -----------------------------------
     if any(k.endswith('lid') for k in dl.keys()):
-        _u('plot_request/'.format(lc.address))
+        _u('{}/{}'.format(STATE_DDS_NOTIFY_PLOT_REQUEST, lc.address))
 
     return True
