@@ -4,20 +4,32 @@ logs/*
 !logs/.gitkeep
 !../dds/dl_files/.gitkeep
 *.db
-_macs_to_sn.*
 .idea/
 *.so
 *.lid
 *.csv
 *.gps
 *.txt
+*.sns
+macs/
 
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
-apps/__pycache__/
 *.py[cod]
 *$py.class
+
+
+
+
+# IDE
+.idea/
+
+# C extensions
+*.so
+
+# LID files
+*.lid
 
 # Distribution / packaging
 .Python
@@ -123,5 +135,3 @@ venv.bak/
 # Emacs
 *~
 /.project
-
-
