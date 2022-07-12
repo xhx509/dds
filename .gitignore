@@ -1,22 +1,22 @@
-../dds/dl_files/*
-logs/*
-# un-ignore so empty folders are copied
-!logs/.gitkeep
-!../dds/dl_files/.gitkeep
-*.db
-_macs_to_sn.*
-.idea/
-*.so
-*.lid
-*.csv
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Lowell extensions
+*.sns
+macs/
 *.gps
 
 
-# Byte-compiled / optimized / DLL files
-__pycache__/
-apps/__pycache__/
-*.py[cod]
-*$py.class
+# IDE
+.idea/
+
+# C extensions
+*.so
+
+# LID files
+*.lid
 
 # Distribution / packaging
 .Python
@@ -122,5 +122,3 @@ venv.bak/
 # Emacs
 *~
 /.project
-
-
