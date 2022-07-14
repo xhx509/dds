@@ -12,6 +12,7 @@ logs/*
 *.txt
 *.sns
 macs/
+*.pyc
 
 
 # Byte-compiled / optimized / DLL files

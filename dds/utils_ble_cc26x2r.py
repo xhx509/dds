@@ -7,7 +7,7 @@ from mat.crc import calculate_local_file_crc
 from mat.dds_states import STATE_DDS_BLE_DOWNLOAD_SLOW, STATE_DDS_BLE_DEPLOY_FALLBACK, STATE_DDS_NOTIFY_PLOT_REQUEST
 from settings import ctx
 from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, get_dl_folder_path_from_mac
-from settings.ctx import hook_ble_gdo_dummy_measurement
+from settings.ctx import hook_ble_gdo_dummy_measurement, hook_ble_create_dummy_file
 
 
 def _cc26x2r_rm_null_files(lc, ls):
@@ -173,6 +173,10 @@ def utils_ble_cc26x2r_interact(lc, g):
     ble_li_bat(lc)
     ble_li_sws(lc, g)
     ble_li_time_sync(lc)
+
+    # debug hook MTS
+    if hook_ble_create_dummy_file:
+        ble_li_mts(lc)
 
     # --------------------------------------
     # listing files in cc26x2-based logger

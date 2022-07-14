@@ -47,6 +47,7 @@ hook_ble_error_forced = False
 hook_ble_gdo_dummy_measurement = True
 hook_ble_purge_black_macs_on_boot = True
 hook_ble_purge_this_mac_dl_files_folder = False
+hook_ble_create_dummy_file = True
 
 
 # to re-deploy
@@ -167,7 +168,7 @@ def ble_get_antenna_type():
 
     if _hci_is_external(1):
         if _hci_is_up(1):
-             return 1, 'external'
+            return 1, 'external'
         return 0, 'internal'
 
     # fallback

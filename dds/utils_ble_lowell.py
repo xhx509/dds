@@ -144,6 +144,7 @@ def ble_li_mts(lc):
     rv = lc.ble_cmd_mts()
     if not rv:
         ble_die('mts failed')
+    ble_ok('MTS is {}'.format(rv))
 
 
 def ble_li_btc(lc):
