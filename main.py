@@ -8,7 +8,7 @@ from dds.logs import *
 from dds.sns import sns_serve, sns_notify_ddh_booted
 from dds.utils_ble import ble_loop, ble_debug_hooks_at_boot
 from mat.dds_states import STATE_DDS_BLE_APP_BOOT
-from mat.utils import linux_app_write_pid
+from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
 from mat.ddh_shared import send_ddh_udp_gui as _u, \
     ddh_check_conf_json_file, \
     ddh_get_macs_from_json_file
@@ -20,6 +20,7 @@ from settings.ctx import macs_color_create_folder, \
 
 if __name__ == '__main__':
 
+    ensure_we_run_only_one_instance('dds')
     log_core_start_at_boot()
     log_tracking_start_at_boot()
     macs_color_create_folder()
