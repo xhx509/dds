@@ -1,7 +1,7 @@
 import datetime
 import time
 from dds.logs import l_d_, l_e_, l_i_
-from mat.dds_states import STATE_DDS_BLE_APP_GPS_ERROR_POSITION, STATE_DDS_NOTIFY_BOAT_NAME
+from mat.dds_states import STATE_DDS_BLE_APP_GPS_ERROR_POSITION, STATE_DDS_NOTIFY_BOAT_NAME, STATE_DDS_NOTIFY_GPS
 from mat.gps import gps_configure_quectel, gps_get_rmc_data
 from mat.utils import linux_is_rpi, linux_set_datetime
 from settings import ctx as cu
@@ -57,11 +57,14 @@ def gps_measure(timeout=3):
         if g[3] == '':
             g[3] = '0'
         # float, float, datetime UTC, string
+        _u('{}/{},{}'.format(STATE_DDS_NOTIFY_GPS, lat, lon))
         return lat, lon, g[2], float(g[3])
+
+    # failed
     _u(STATE_DDS_BLE_APP_GPS_ERROR_POSITION)
 
 
-def gps_clock_sync_if_bad(dt_gps_utc):
+def gps_clock_sync_if_so(dt_gps_utc):
 
     # todo: test this GPS clock sync
 

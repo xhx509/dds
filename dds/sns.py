@@ -101,7 +101,7 @@ def _sns_add(reason, lat, lon):
         'gps_position': '{},{}'.format(lat, lon)
     }
     fol = str(get_dds_folder_path_sns())
-    now = time.perf_counter()
+    now = int(time.time())
     path = '{}/{}.sns'.format(fol, now)
     with open(path, 'w') as f:
         json.dump(d, f)

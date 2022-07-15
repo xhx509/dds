@@ -84,6 +84,11 @@ def macs_color_create_folder():
     os.makedirs(r, exist_ok=True)
 
 
+def sns_create_folder():
+    r = 'sns'
+    os.makedirs(r, exist_ok=True)
+
+
 def macs_color_show_at_boot():
     b = macs_black()
     o = macs_orange()
