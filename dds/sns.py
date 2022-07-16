@@ -57,7 +57,11 @@ def sns_serve():
     flag = get_ddh_sns_force_file_flag()
     if not time_to_notify and not os.path.isfile(flag):
         return
+    g_last_notify = time.perf_counter()
 
+    # -----------------
+    # ARN topic checks
+    # -----------------
     topic_arn = os.getenv('DDH_AWS_SNS_TOPIC_ARN')
     if topic_arn is None:
         l_e_('[ SNS ] missing topic ARN')
@@ -67,7 +71,9 @@ def sns_serve():
         l_e_('[ SNS ] topic ARN malformed')
         return 1
 
-    g_last_notify = time.perf_counter()
+    # --------------------------------
+    # grab and send SNS notifications
+    # --------------------------------
     fol = get_dds_folder_path_sns()
     files = glob.glob('{}/*.sns'.format(fol))
     for _ in files:
