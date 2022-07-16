@@ -2,12 +2,12 @@ import os
 import time
 
 from dds.utils_ble_lowell import utils_ble_build_files_to_download_as_dict, ble_ok, ble_die, ble_li_sws, ble_li_btc, \
-    ble_li_time_sync, ble_li_ping, ble_li_ls_all, ble_li_run, utils_ble_set_last_haul
-from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns
-from dds.logs import l_i_, l_e_
+    ble_li_time_sync, ble_li_ls_all, ble_li_run, utils_ble_set_last_haul
+from mat.ddh_shared import send_ddh_udp_gui as _u
+from dds.logs import l_e_
 from mat.ddh_shared import get_dl_folder_path_from_mac
 from mat import data_file_factory
-from mat.dds_states import STATE_DDS_NOTIFY_PLOT_REQUEST
+from mat.dds_states import STATE_DDS_REQUEST_PLOT
 
 
 def _get_files_rn4020(lc, ls):
@@ -24,7 +24,7 @@ def _get_files_rn4020(lc, ls):
     dl_ones_ok = {}
     for name, size in name_n_size.items():
         ble_ok('getting file {}, {} bytes'.format(name, size))
-        data = lc.ble_cmd_get(name, size, p='/tmp/ddh_p.txt')
+        data = lc.ble_cmd_get(name, size)
         if not data:
             e = '[ BLE ] cannot get {}, size {}'
             ble_die(e.format(name, size))
@@ -52,8 +52,7 @@ def _get_files_rn4020(lc, ls):
     # ----------------
     # display success
     # ----------------
-    s = 'almost done'
-    ble_ok(s)
+    ble_ok('almost done')
     return len(name_n_size) == len(dl_ones_ok), dl_ones_ok
 
 
@@ -62,9 +61,6 @@ def utils_ble_rn4020_interact(lc, g):
     if not lc.open():
         ble_die('cannot connect {}'.format(lc.address))
 
-    sn = ddh_get_json_mac_dns(lc.address)
-    l_i_('querying \'{}\''.format(sn))
-
     time.sleep(.5)
     ble_li_sws(lc, g)
     time.sleep(.5)
@@ -72,15 +68,12 @@ def utils_ble_rn4020_interact(lc, g):
     time.sleep(.5)
     ble_li_time_sync(lc)
     time.sleep(.5)
-    ble_li_ping(lc)
-    time.sleep(.5)
 
-    ls = ble_li_ls_all(lc, dbg_pre_rm=False)
+    ls = ble_li_ls_all(lc)
     time.sleep(1)
 
     rv, dl = _get_files_rn4020(lc, ls)
     time.sleep(.5)
-    ble_li_ping(lc)
 
     if rv:
         time.sleep(.5)
@@ -120,6 +113,6 @@ def utils_ble_rn4020_interact(lc, g):
     # PLOT only if we got some lid files
     # -----------------------------------
     if any(k.endswith('lid') for k in dl.keys()):
-        _u('{}/{}'.format(STATE_DDS_NOTIFY_PLOT_REQUEST, lc.address))
+        _u('{}/{}'.format(STATE_DDS_REQUEST_PLOT, lc.address))
 
     return True

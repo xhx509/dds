@@ -4,7 +4,7 @@ from dds.logs import l_i_, l_e_, l_d_, l_w_
 from dds.sns import sns_notify_dissolved_oxygen_zeros
 from dds.utils_ble_lowell import *
 from mat.crc import calculate_local_file_crc
-from mat.dds_states import STATE_DDS_BLE_DOWNLOAD_SLOW, STATE_DDS_BLE_DEPLOY_FALLBACK, STATE_DDS_NOTIFY_PLOT_REQUEST
+from mat.dds_states import STATE_DDS_BLE_DOWNLOAD_SLOW, STATE_DDS_BLE_DEPLOY_FALLBACK, STATE_DDS_REQUEST_PLOT
 from settings import ctx
 from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, get_dl_folder_path_from_mac
 from settings.ctx import hook_ble_gdo_dummy_measurement, hook_ble_create_dummy_file
@@ -181,7 +181,7 @@ def utils_ble_cc26x2r_interact(lc, g):
     # --------------------------------------
     # listing files in cc26x2-based logger
     # --------------------------------------
-    ls = ble_li_ls_all(lc, dbg_pre_rm=False)
+    ls = ble_li_ls_all(lc)
 
     # ---------------------------------------------------------------
     # remote clean-up for files we already have or with size 0-bytes
@@ -228,6 +228,6 @@ def utils_ble_cc26x2r_interact(lc, g):
     # PLOT only if we got some lid files
     # -----------------------------------
     if any(k.endswith('lid') for k in dl.keys()):
-        _u('{}/{}'.format(STATE_DDS_NOTIFY_PLOT_REQUEST, lc.address))
+        _u('{}/{}'.format(STATE_DDS_REQUEST_PLOT, lc.address))
 
     return True

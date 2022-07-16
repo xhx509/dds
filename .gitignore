@@ -1,8 +1,8 @@
-../dds/dl_files/*
 logs/*
+dl_files/*
 # un-ignore so empty folders are copied
 !logs/.gitkeep
-!../dds/dl_files/.gitkeep
+!dl_files/.gitkeep
 *.db
 .idea/
 *.so

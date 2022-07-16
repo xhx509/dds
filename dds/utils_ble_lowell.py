@@ -45,15 +45,8 @@ def utils_ble_set_last_haul(fol, s):
         json.dump(d, f)
 
 
-def ble_li_ls_all(lc, dbg_pre_rm=False) -> dict:
+def ble_li_ls_all(lc) -> dict:
     mac = lc.address
-    if dbg_pre_rm:
-        fol = str(get_dds_folder_path_dl_files())
-        fol += '/{}/'.format(mac.replace(':', '-').lower())
-        # todo: test this path before doing anyrmtree()
-        print(fol)
-        # shutil.rmtree(fol, ignore_errors=True)
-
     create_folder_logger_by_mac(mac)
     rv = lc.ble_cmd_dir()
     if rv == b'ERR':
@@ -163,17 +156,6 @@ def ble_li_gdo(lc):
 
         ble_ok('GDO: {}'.format((dos, dop, dot)))
         return True
-
-
-def ble_li_ping(lc):
-    # will do something only for RN4020 loggers
-    rv = lc.ble_cmd_ping()
-    if rv:
-        ble_ok('ping')
-        return
-    if type(rv) is bytes:
-        rv = rv.decode()
-    ble_die('ping {}'.format(rv))
 
 
 def ble_li_sws(lc, g):  # STOP with STRING

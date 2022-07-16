@@ -1,19 +1,37 @@
 import os
-import socket
 import time
 from dds.logs import l_i_
-from dds.utils_ble_lowell import ble_die, ble_ok, utils_ble_set_last_haul
+from dds.utils_ble_lowell import ble_die, ble_ok, utils_ble_set_last_haul, AppBLEException
+from mat.ble.bluepy.moana_logger_controller import calculate_moana_file_crc
 from mat.ddh_shared import get_dl_folder_path_from_mac
+from mat.ddh_shared import send_ddh_udp_gui as _u
+from mat.dds_states import STATE_DDS_REQUEST_PLOT
 
 
-def _progress_bar_poor(v):
-    _sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    _sk.sendto(str(v).encode(), ('127.0.0.1', 12349))
+def _ble_moana_open(lc) -> bool:
+    for i in range(3):
+        try:
+            if lc.open():
+                return True
+        except AppBLEException:
+            time.sleep(1)
+    return False
+
+
+def _ble_moana_get_size(lc) -> int:
+    for i in range(3):
+        try:
+            f_size = lc.file_info_get_size()
+            if f_size:
+                return f_size
+        except AppBLEException:
+            time.sleep(1)
+    ble_die('failed getting file size')
 
 
 def utils_ble_moana_interact(lc):
 
-    if not lc.open():
+    if not _ble_moana_open(lc):
         ble_die('cannot connect {}'.format(lc.mac))
 
     # -----------------------------------
@@ -30,56 +48,59 @@ def utils_ble_moana_interact(lc):
     # -----------------------------------
     # get metadata of file inside moana
     # -----------------------------------
-    filename = ''
+    f_name = ''
     for i in range(3):
-        filename = lc.file_info()
-        if filename:
+        f_name = lc.file_info()
+        if f_name:
             break
-        if i == 2 and not filename:
+        if i == 2 and not f_name:
             ble_die('file_info')
         time.sleep(1)
 
-    # ---------------------------------------------
-    # moana CRC is weird, we just download file
-    # twice and compare the data section
-    # ---------------------------------------------
+    # --------------------
+    # download moana file
+    # --------------------
     fol = get_dl_folder_path_from_mac(lc.mac)
     try:
         os.mkdir(fol)
     except OSError:
         pass
-    l_i_('[ BLE ] #1, getting file {}'.format(filename))
-    _progress_bar_poor(20)
-    data = lc.file_get()
-    l_i_('[ BLE ] #2, getting file {}'.format(filename))
-    lc.file_info()
-    data2 = lc.file_get()
-    _progress_bar_poor(100)
-    i = data.index(b'\x03')
-    data_section_equal = data[i:] == data2[i:]
-    if not data_section_equal:
-        ble_die('file_pseudo_crc')
 
-    name = lc.file_save(fol, data)
-    if not name:
+    f_size = _ble_moana_get_size(lc)
+    s = '[ BLE ] #1, getting file {}, size {}'
+    l_i_(s.format(f_name, f_size))
+    d1 = lc.file_get(f_size)
+
+    f_size = _ble_moana_get_size(lc)
+    s = '[ BLE ] #2, getting file {}, size {}'
+    l_i_(s.format(f_name, f_size))
+    d2 = lc.file_get(f_size)
+
+    # ---------------------------------------------
+    # moana CRC is weird, we just download file
+    # twice and compare the data section
+    # ---------------------------------------------
+    i = d1.index(b'\x03')
+    if d1[i:] != d2[i:]:
+        ble_die('file_pseudo_crc')
+    l_i_('[ BLE ] moana file download twice and OK')
+    path = lc.file_save(fol, d1)
+    if not path:
         ble_die('file_save')
 
-    # -----------------------------------
+    # ------------------------------------
     # conversion of the file inside moana
-    # -----------------------------------
-    l_i_('[ BLE ] converting file...')
-    prefix_cnv = ''
-    for i in range(3):
-        prefix_cnv = lc.file_cnv(name, fol, len(data))
-        if i == 2 and not prefix_cnv:
-            ble_die('file conversion')
-        time.sleep(1)
+    # ------------------------------------
+    l_i_('[ BLE ] converting file {}'.format(f_name))
+    prefix_cnv = lc.file_cnv(path, fol, len(d1))
+    if not prefix_cnv:
+        ble_die('file conversion')
 
-    # --------------------------------------
-    # comment on debug for repetitive tasks
-    # --------------------------------------
-    time.sleep(1)
-    lc.file_clear()
+    # ----------------------------------------
+    # DEBUG: comment for repetitive downloads
+    # ----------------------------------------
+    # time.sleep(1)
+    # lc.file_clear()
 
     # for last haul application
     utils_ble_set_last_haul(fol, prefix_cnv)
@@ -87,6 +108,6 @@ def utils_ble_moana_interact(lc):
     # -----------------------------------
     # PLOT only if we got some files
     # -----------------------------------
-    # back['plt']['dl'] = lc.mac
+    _u('{}/{}'.format(STATE_DDS_REQUEST_PLOT, lc.mac))
 
     return True

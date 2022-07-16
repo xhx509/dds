@@ -17,7 +17,7 @@ def gps_connect_shield():
         return
 
     if hook_gps_dummy_measurement:
-        l_i_('[ BLE ] dummy GPS connected')
+        l_d_('[ BLE ] dummy GPS connected')
         return
 
     # after dummy
@@ -66,7 +66,7 @@ def gps_measure(timeout=3):
 
 def gps_clock_sync_if_so(dt_gps_utc):
 
-    # todo: test this GPS clock sync
+    # todo: on RPi, test this GPS clock sync
 
     utc_now = datetime.datetime.utcnow()
     diff_secs = abs((dt_gps_utc - utc_now).total_seconds())
