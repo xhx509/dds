@@ -13,6 +13,9 @@ def _cnv(m):
     ddh_convert_lid_to_csv(fol, m)
 
 
+# todo: do all logs in their separate files, with date same format
+
+
 def _fxn():
     _th_o = threading.Thread(target=_cnv, args=('_DissolvedOxygen', ))
     _th_t = threading.Thread(target=_cnv, args=('_Temperature', ))
