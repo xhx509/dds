@@ -5,7 +5,7 @@ import pathlib
 import time
 import subprocess as sp
 from botocore.exceptions import EndpointConnectionError, ClientError
-from dds.logs import l_e_, l_i_
+from dds.logs import l_e_, l_i_, l_w_
 from mat.aws.sns import get_aws_sns_client
 import json
 from mat.ddh_shared import dds_get_json_vessel_name, ddh_get_commit, \
@@ -51,13 +51,11 @@ def sns_serve():
         l_i_('[ SNS ] not enabled')
         return
 
-    now = time.perf_counter()
-    global g_last_notify
-    time_to_notify = g_last_notify + 10 > now
     flag = get_ddh_sns_force_file_flag()
-    if not time_to_notify and not os.path.isfile(flag):
+    if not os.path.isfile(flag):
         return
-    g_last_notify = time.perf_counter()
+    l_w_('[ SNS ] detected force flag')
+    os.unlink(flag)
 
     # -----------------
     # ARN topic checks

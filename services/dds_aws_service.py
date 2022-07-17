@@ -17,7 +17,7 @@ from mat.utils import linux_app_write_pid
 
 date_fmt = "%Y-%b-%d %H:%M:%S"
 t = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-_f = str(get_dds_folder_path_logs() / 'aws' / '{}.log'.format(str(t)))
+_f = str(get_dds_folder_path_logs() / 'aws_{}.log'.format(str(t)))
 logging.basicConfig(filename=_f,
                     filemode='w',
                     datefmt=date_fmt,
@@ -30,13 +30,13 @@ _le = logging.error
 def _p(s):
     if type(s) is bytes:
         s = s.decode()
-    s = 'AWS | ' + s
+    s = '[ AWS ] ' + s
     _li(s)
     print(s)
 
 
 def _e(s):
-    s = 'AWS | ' + s
+    s = '[ AWS ] ' + s
     _le(s)
     print(s)
 
