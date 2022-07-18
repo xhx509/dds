@@ -1,19 +1,23 @@
 import os
 import threading
 import time
-from dds.logs import l_i_
 from mat.ddh_shared import get_dds_folder_path_dl_files, ddh_convert_lid_to_csv, get_dds_is_ble_downloading_flag
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
+from services.dds_log_service import DDSLogs
+
+
+lg = DDSLogs('cnv')
+
+
+def _p(s):
+    lg.a(s)
 
 
 def _cnv(m):
     fol = str(get_dds_folder_path_dl_files())
-    s = '[ CNV ] started thread {} on fol {}'
-    l_i_(s.format(m, fol))
+    s = 'started thread {} on fol {}'
+    _p(s.format(m, fol))
     ddh_convert_lid_to_csv(fol, m)
-
-
-# todo: do all logs in their separate files, with date same format
 
 
 def _fxn():
@@ -34,7 +38,7 @@ if __name__ == '__main__':
     while 1:
         break_t = 0
         while os.path.isfile(flag) and break_t < 5:
-            l_i_('[ CNV ] not converting while BLE downloading')
+            _p('not converting while BLE downloading')
             time.sleep(60)
             break_t += 1
         _fxn()

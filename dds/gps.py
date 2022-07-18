@@ -1,6 +1,6 @@
 import datetime
 import time
-from dds.logs import l_d_, l_e_, l_i_
+from dds.utils_ble_logs import l_d_, l_e_, l_i_
 from mat.dds_states import STATE_DDS_BLE_APP_GPS_ERROR_POSITION, STATE_DDS_NOTIFY_BOAT_NAME, STATE_DDS_NOTIFY_GPS
 from mat.gps import gps_configure_quectel, gps_get_rmc_data
 from mat.utils import linux_is_rpi, linux_set_datetime
@@ -42,8 +42,8 @@ def gps_measure(timeout=3):
         return
 
     if cu.hook_gps_dummy_measurement or not linux_is_rpi():
-        l_d_('[ GPS ] hook_gps_dummy_measurement')
-        time.sleep(1)
+        # l_d_('[ GPS ] hook_gps_dummy_measurement')
+        time.sleep(.5)
         lat = '{:+.6f}'.format(38.000000000)
         lon = '{:+.6f}'.format(-83.0)
         return lat, lon, datetime.datetime.utcnow(), 1

@@ -2,7 +2,7 @@ import glob
 import os
 import pathlib
 import time
-from dds.logs import l_i_
+from dds.utils_ble_logs import l_i_
 from mat.ddh_shared import get_dds_folder_path_macs, \
     get_dds_loggers_forget_time
 

@@ -1,6 +1,6 @@
 import os
 import time
-from dds.logs import l_i_, l_e_, l_d_, l_w_
+from dds.utils_ble_logs import l_i_, l_e_, l_d_, l_w_
 from dds.sns import sns_notify_dissolved_oxygen_zeros
 from dds.utils_ble_lowell import *
 from mat.crc import calculate_local_file_crc

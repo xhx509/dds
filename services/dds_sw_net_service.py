@@ -1,25 +1,15 @@
 #!/usr/bin/env python3
 
 
-import datetime
-import logging
 import time
 import subprocess as sp
-from mat.ddh_shared import get_dds_folder_path_logs
 from mat.dds_states import STATE_DDS_NOTIFY_NET_VIA
 from mat.utils import linux_app_write_pid, linux_is_rpi
 from mat.ddh_shared import send_ddh_udp_gui as _u
+from services.dds_log_service import DDSLogs
 
 
-date_fmt = "%Y-%b-%d %H:%M:%S"
-t = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-_f = str(get_dds_folder_path_logs() / 'net_{}.log'.format(str(t)))
-logging.basicConfig(filename=_f,
-                    filemode='w',
-                    datefmt=date_fmt,
-                    format='%(asctime)s [ %(levelname)s ] %(message)s',
-                    level=logging.INFO)
-_li = logging.info
+lg = DDSLogs('net')
 
 
 def _sh(s: str) -> bool:
@@ -28,9 +18,7 @@ def _sh(s: str) -> bool:
 
 
 def _p(s):
-    s = '[ NET ] via ' + s
-    _li(s)
-    print(s)
+    lg.a(s)
 
 
 def main():

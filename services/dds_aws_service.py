@@ -3,47 +3,28 @@
 
 import os
 import time
-
-from dds.logs import l_i_
 from mat.ddh_shared import send_ddh_udp_gui as _u, \
     get_dds_folder_path_dl_files, \
-    get_dds_folder_path_logs, get_dds_aws_has_something_to_do_flag
+    get_dds_aws_has_something_to_do_flag
 import subprocess as sp
-import logging
 import datetime
-
 from mat.dds_states import STATE_DDS_NOTIFY_CLOUD
 from mat.utils import linux_app_write_pid
+from services.dds_log_service import DDSLogs
 
-date_fmt = "%Y-%b-%d %H:%M:%S"
-t = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-_f = str(get_dds_folder_path_logs() / 'aws_{}.log'.format(str(t)))
-logging.basicConfig(filename=_f,
-                    filemode='w',
-                    datefmt=date_fmt,
-                    format='%(asctime)s [ %(levelname)s ] %(message)s',
-                    level=logging.INFO)
-_li = logging.info
-_le = logging.error
+
+lg = DDSLogs('aws')
 
 
 def _p(s):
     if type(s) is bytes:
         s = s.decode()
-    s = '[ AWS ] ' + s
-    _li(s)
-    print(s)
-
-
-def _e(s):
-    s = '[ AWS ] ' + s
-    _le(s)
-    print(s)
+    global lg
+    lg.a(s)
 
 
 def _s3():
 
-    _p('log file is {}'.format(_f))
     fol = get_dds_folder_path_dl_files()
     _k = os.getenv('DDH_AWS_KEY_ID')
     _s = os.getenv('DDH_AWS_SECRET')
@@ -66,31 +47,30 @@ def _s3():
         _p(rv.stdout)
         return
     _u('{}/ERR'.format(STATE_DDS_NOTIFY_CLOUD))
-    _e('BAD cloud sync on {}'.format(_t))
-    _e(rv.stderr)
-
-
-def _aws_flag() -> bool:
-    path = str(get_dds_aws_has_something_to_do_flag())
-    return os.path.exists(path)
+    _p('BAD cloud sync on {}'.format(_t))
+    _p(rv.stderr)
 
 
 def main():
 
     i = 0
-    p = str(get_dds_aws_has_something_to_do_flag())
+    f = str(get_dds_aws_has_something_to_do_flag())
     linux_app_write_pid('dds-aws')
 
+    now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    _p('log created on {}'.format(now))
+
     while 1:
-        f = _aws_flag()
-        if i % 60 == 0 or f:
-            if f:
-                l_i_('[ AWS ] flag found')
-                os.unlink(p)
+        if i % 60 == 0:
+            _p('it was about time')
             _s3()
-            i = 0
+        elif os.path.isfile(f):
+            _p('flag found')
+            os.unlink(f)
+            _s3()
+        else:
+            i += 1
         time.sleep(60)
-        i += 1
 
 
 # debug

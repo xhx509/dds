@@ -20,7 +20,7 @@ def _log_init(d):
     # create folder if it does not exist
     Path(d).mkdir(parents=True, exist_ok=True)
     ts = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    path = '{}/{}'.format(d, 'ddh_{}.log'.format(ts))
+    path = '{}/{}'.format(d, 'dds_{}.log'.format(ts))
 
     def _th_fxn():
         while 1:
@@ -89,7 +89,7 @@ def log_core_start_at_boot():
     _log_init(d)
     time.sleep(.1)
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    l_w_('\n\n\n[ BLE ] log created on {}'.format(now))
+    l_w_('[ BLE ] log created on {}'.format(now))
 
 
 def log_tracking_start_at_boot():
@@ -98,5 +98,5 @@ def log_tracking_start_at_boot():
     time.sleep(.1)
     _tracker_init(d, v)
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    l_w_('\n\n\n[ BLE ] track log created on {}'.format(now))
+    l_w_('[ BLE ] track log created on {}'.format(now))
 

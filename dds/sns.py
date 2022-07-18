@@ -5,7 +5,7 @@ import pathlib
 import time
 import subprocess as sp
 from botocore.exceptions import EndpointConnectionError, ClientError
-from dds.logs import l_e_, l_i_, l_w_
+from dds.utils_ble_logs import l_e_, l_i_, l_w_
 from mat.aws.sns import get_aws_sns_client
 import json
 from mat.ddh_shared import dds_get_json_vessel_name, ddh_get_commit, \

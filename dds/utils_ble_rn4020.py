@@ -4,7 +4,7 @@ import time
 from dds.utils_ble_lowell import utils_ble_build_files_to_download_as_dict, ble_ok, ble_die, ble_li_sws, ble_li_btc, \
     ble_li_time_sync, ble_li_ls_all, ble_li_run, utils_ble_set_last_haul
 from mat.ddh_shared import send_ddh_udp_gui as _u
-from dds.logs import l_e_
+from dds.utils_ble_logs import l_e_
 from mat.ddh_shared import get_dl_folder_path_from_mac
 from mat import data_file_factory
 from mat.dds_states import STATE_DDS_REQUEST_PLOT

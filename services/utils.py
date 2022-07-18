@@ -1,4 +1,4 @@
-from dds.logs import l_i_
+from dds.utils_ble_logs import l_i_
 from mat.systemd import systemd_is_this_service_active, systemd_is_this_service_enabled
 
 

@@ -4,7 +4,7 @@
 from dds.gps import gps_wait_for_it_at_boot, \
     gps_measure, gps_connect_shield, gps_clock_sync_if_so, \
     gps_tell_vessel_name
-from dds.logs import *
+from dds.utils_ble_logs import *
 from dds.sns import sns_serve, sns_notify_ddh_booted
 from dds.utils_ble import ble_loop, ble_debug_hooks_at_boot
 from mat.dds_states import STATE_DDS_BLE_APP_BOOT
@@ -16,12 +16,12 @@ from services.utils import check_dds_services
 from settings.ctx import macs_color_create_folder, \
     macs_color_show_at_boot, \
     op_conditions_met, ble_get_antenna_type, \
-    ble_flag_dl, ble_un_flag_dl, sns_create_folder
+    ble_flag_dl, ble_un_flag_dl, sns_create_folder, ble_un_flag_dl_at_boot
 
 
 if __name__ == '__main__':
-
     ensure_we_run_only_one_instance('dds')
+    ble_un_flag_dl_at_boot()
     log_core_start_at_boot()
     log_tracking_start_at_boot()
     macs_color_create_folder()
@@ -45,7 +45,7 @@ if __name__ == '__main__':
         gps_tell_vessel_name()
         g = gps_measure()
         if not g:
-            time.sleep(5)
+            time.sleep(1)
             continue
 
         g = lat, lon, dt_gps, speed

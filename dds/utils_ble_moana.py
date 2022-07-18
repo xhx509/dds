@@ -1,6 +1,6 @@
 import os
 import time
-from dds.logs import l_i_
+from dds.utils_ble_logs import l_i_
 from dds.utils_ble_lowell import ble_die, ble_ok, utils_ble_set_last_haul, AppBLEException
 from mat.ddh_shared import get_dl_folder_path_from_mac
 from mat.ddh_shared import send_ddh_udp_gui as _u

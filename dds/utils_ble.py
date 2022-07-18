@@ -3,7 +3,7 @@ import shutil
 import traceback
 import bluepy.btle as ble
 import time
-from dds.logs import l_e_, l_d_, l_i_
+from dds.utils_ble_logs import l_e_, l_d_, l_i_
 from dds.macs import macs_black, macs_orange, rm_mac_black, rm_mac_orange, add_mac_orange, add_mac_black, \
     is_mac_in_black, is_mac_in_orange
 from dds.sns import sns_notify_logger_error, sns_notify_ble_scan_exception

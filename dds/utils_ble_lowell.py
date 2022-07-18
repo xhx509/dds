@@ -1,5 +1,5 @@
 import time
-from dds.logs import l_e_, l_i_
+from dds.utils_ble_logs import l_e_, l_i_
 from mat.ddh_shared import *
 
 
