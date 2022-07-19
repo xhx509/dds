@@ -20,7 +20,9 @@ from settings.ctx import macs_color_create_folder, \
 
 
 if __name__ == '__main__':
-    ensure_we_run_only_one_instance('dds')
+
+    ensure_we_run_only_one_instance('dds-core')
+
     ble_un_flag_dl_at_boot()
     log_core_start_at_boot()
     log_tracking_start_at_boot()

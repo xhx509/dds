@@ -35,6 +35,7 @@ if __name__ == '__main__':
 
     ensure_we_run_only_one_instance('dds-cnv')
     linux_app_write_pid('dds-cnv')
+
     flag = get_dds_is_ble_downloading_flag()
 
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")

@@ -9,7 +9,7 @@ from mat.ddh_shared import send_ddh_udp_gui as _u, \
 import subprocess as sp
 import datetime
 from mat.dds_states import STATE_DDS_NOTIFY_CLOUD
-from mat.utils import linux_app_write_pid
+from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
 from services.dds_log_service import DDSLogs
 
 
@@ -53,9 +53,11 @@ def _s3():
 
 def main():
 
+    ensure_we_run_only_one_instance('dds-aws')
+    linux_app_write_pid('dds-aws')
+
     i = 0
     f = str(get_dds_aws_has_something_to_do_flag())
-    linux_app_write_pid('dds-aws')
 
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     _p('log created on {}'.format(now))
