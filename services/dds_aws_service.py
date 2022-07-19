@@ -9,7 +9,7 @@ from mat.ddh_shared import send_ddh_udp_gui as _u, \
 import subprocess as sp
 import datetime
 from mat.dds_states import STATE_DDS_NOTIFY_CLOUD
-from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
+from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance, linux_is_rpi
 from dds_log_service import DDSLogs
 
 
@@ -21,6 +21,12 @@ def _p(s):
         s = s.decode()
     lg.a(s)
     print(s)
+
+
+def _get_aws_bin_path():
+    if linux_is_rpi():
+        return '/home/pi/li/venv/bin/aws'
+    return 'aws'
 
 
 def _s3():
@@ -37,7 +43,7 @@ def _s3():
     _n = 'bkt-' + _n
 
     c = 'AWS_ACCESS_KEY_ID={} AWS_SECRET_ACCESS_KEY={} ' \
-        'aws s3 sync {} s3://{} --dryrun'
+        '{} s3 sync {} s3://{} --dryrun'.format(_get_aws_bin_path())
     c = c.format(_k, _s, fol, _n)
     rv = sp.run(c, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
     _t = datetime.datetime.now()
