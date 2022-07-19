@@ -20,9 +20,8 @@ class DDSLogs:
     def a(self, s):
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         s = '{} [ {} ] {}'.format(now, self.label.upper(), s)
-        with open(self.f_name, 'w+') as f:
+        with open(self.f_name, 'a') as f:
             f.write(s + '\n')
-        time.sleep(.01)
 
 
 if __name__ == '__main__':

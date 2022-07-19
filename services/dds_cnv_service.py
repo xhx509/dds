@@ -1,3 +1,4 @@
+import datetime
 import os
 import threading
 import time
@@ -11,6 +12,7 @@ lg = DDSLogs('cnv')
 
 def _p(s):
     lg.a(s)
+    print(s)
 
 
 def _cnv(m):
@@ -34,6 +36,9 @@ if __name__ == '__main__':
     ensure_we_run_only_one_instance('dds-cnv')
     linux_app_write_pid('dds-cnv')
     flag = get_dds_is_ble_downloading_flag()
+
+    now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    _p('log created on {}'.format(now))
 
     while 1:
         break_t = 0

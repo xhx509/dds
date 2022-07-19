@@ -19,8 +19,8 @@ lg = DDSLogs('aws')
 def _p(s):
     if type(s) is bytes:
         s = s.decode()
-    global lg
     lg.a(s)
+    print(s)
 
 
 def _s3():
@@ -62,14 +62,16 @@ def main():
 
     while 1:
         if i % 60 == 0:
-            _p('it was about time')
+            _p('time to do AWS')
+            t = time.perf_counter()
             _s3()
+            t = time.perf_counter() - t
+            _p('took {} seconds'.format(t))
         elif os.path.isfile(f):
             _p('flag found')
             os.unlink(f)
             _s3()
-        else:
-            i += 1
+        i += 1
         time.sleep(60)
 
 

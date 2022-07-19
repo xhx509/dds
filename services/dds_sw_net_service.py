@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-
-
+import datetime
 import time
 import subprocess as sp
 from mat.dds_states import STATE_DDS_NOTIFY_NET_VIA
@@ -19,6 +18,7 @@ def _sh(s: str) -> bool:
 
 def _p(s):
     lg.a(s)
+    print(s)
 
 
 def main():
@@ -68,5 +68,9 @@ def main():
 
 if __name__ == '__main__':
     linux_app_write_pid('dds-net')
+
+    now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    _p('log created on {}'.format(now))
+
     while 1:
         main()
