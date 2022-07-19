@@ -10,7 +10,7 @@ import subprocess as sp
 import datetime
 from mat.dds_states import STATE_DDS_NOTIFY_CLOUD
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
-from services.dds_log_service import DDSLogs
+from dds_log_service import DDSLogs
 
 
 lg = DDSLogs('aws')

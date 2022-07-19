@@ -4,7 +4,7 @@ import threading
 import time
 from mat.ddh_shared import get_dds_folder_path_dl_files, ddh_convert_lid_to_csv, get_dds_is_ble_downloading_flag
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
-from services.dds_log_service import DDSLogs
+from dds_log_service import DDSLogs
 
 
 lg = DDSLogs('cnv')
