@@ -32,7 +32,7 @@ def _s3():
 
     if _k is None or _s is None or _n is None:
         _p('missing credentials')
-        _u('{}/bad'.format(STATE_DDS_NOTIFY_CLOUD))
+        _u('{}/log-in'.format(STATE_DDS_NOTIFY_CLOUD))
         return 1
     _n = 'bkt-' + _n
 
