@@ -1,18 +1,56 @@
 #!/usr/bin/env python3
 import datetime
-import time
+import os
+import platform
+import socket
 import subprocess as sp
-from mat.dds_states import STATE_DDS_NOTIFY_NET_VIA
-from mat.utils import linux_app_write_pid, linux_is_rpi, ensure_we_run_only_one_instance
-from mat.ddh_shared import send_ddh_udp_gui as _u
+import sys
+import time
 from dds_log_service import DDSLogs
 
 
+STATE_DDS_NOTIFY_NET_VIA = 'net_via'
+DDH_GUI_UDP_PORT = 12349
 lg = DDSLogs('net')
+_sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-# --------------------------------------
-# todo: remove all imports to MAT so we can call this service without virtual environemtn in rpi
-# -----------------------------------
+
+def _u(s, ip='127.0.0.1', port=DDH_GUI_UDP_PORT):
+    if '/' not in s:
+        s += '/'
+    _sk.sendto(s.encode(), (ip, port))
+
+
+def _w_pid(s):
+    if platform.system() != 'Linux':
+        return
+    path = '/tmp/{}.pid'.format(s)
+    if os.path.exists(path):
+        os.remove(path)
+    pid = str(os.getpid())
+    f = open(path, 'w')
+    f.write(pid)
+    f.close()
+
+
+def _is_rpi():
+    return os.uname().nodename in ('raspberrypi', 'rpi')
+
+
+def _only_one_of_me(name):
+
+    ooi = _only_one_of_me
+    ooi._lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+
+    try:
+        # '\0' so does not take a filesystem entry
+        ooi._lock_socket.bind('\0' + name)
+
+    except socket.error:
+        s = '{} already running so NOT executing this one'
+        print(s.format(name))
+        sys.exit(1)
+
 
 def _sh(s: str) -> bool:
     rv = sp.run(s, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
@@ -26,7 +64,7 @@ def _p(s):
 
 def main():
 
-    if not linux_is_rpi():
+    if not _is_rpi():
         _p('laptop')
         _u('{}/laptop'.format(STATE_DDS_NOTIFY_NET_VIA))
         time.sleep(60)
@@ -71,8 +109,8 @@ def main():
 
 if __name__ == '__main__':
 
-    ensure_we_run_only_one_instance('dds-net')
-    linux_app_write_pid('dds-net')
+    _only_one_of_me('dds-net')
+    _w_pid('dds-net')
 
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     _p('log created on {}'.format(now))
