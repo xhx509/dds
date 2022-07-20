@@ -10,6 +10,9 @@ from dds_log_service import DDSLogs
 
 lg = DDSLogs('net')
 
+# --------------------------------------
+# todo: remove all imports to MAT so we can call this service without virtual environemtn in rpi
+# -----------------------------------
 
 def _sh(s: str) -> bool:
     rv = sp.run(s, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
