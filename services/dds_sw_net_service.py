@@ -60,6 +60,8 @@ def _sh(s: str) -> bool:
 def _p(s):
     lg.a(s)
     print(s)
+    # w/o next line, does not appear in journalctl
+    sys.stdout.flush()
 
 
 def main():
@@ -110,7 +112,7 @@ def main():
 if __name__ == '__main__':
 
     # check activity with:
-    #   $ sudo systemctl stats unit_dds_switch_net.service
+    #   $ sudo systemctl status unit_dds_switch_net.service
 
     _only_one_of_me('dds-net')
     _w_pid('dds-net')
