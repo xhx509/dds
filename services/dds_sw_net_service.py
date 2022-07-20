@@ -71,7 +71,7 @@ def main():
         return
 
     # wi-fi can go internet and we already use it
-    wlan_has_via = _sh('timeout 2 ping -c 1 -I wlan0 www.google.com')
+    wlan_has_via = _sh('timeout 0.5 ping -c 1 -I wlan0 www.google.com')
     if wlan_has_via and _sh('ip route get 8.8.8.8 | grep wlan0'):
         _p('wifi')
         _u('{}/wifi'.format(STATE_DDS_NOTIFY_NET_VIA))
@@ -84,7 +84,7 @@ def main():
         time.sleep(2)
 
     # wi-fi, try again
-    wlan_has_via = _sh('timeout 2 ping -c 1 -I wlan0 www.google.com')
+    wlan_has_via = _sh('timeout 0.5 ping -c 1 -I wlan0 www.google.com')
     if wlan_has_via and _sh('ip route get 8.8.8.8 | grep wlan0'):
         _p('* wi-fi *')
         _u('{}/wifi'.format(STATE_DDS_NOTIFY_NET_VIA))
