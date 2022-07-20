@@ -35,6 +35,7 @@ def _s3():
     _k = os.getenv('DDH_AWS_KEY_ID')
     _s = os.getenv('DDH_AWS_SECRET')
     _n = os.getenv('DDH_AWS_NAME')
+    _bin = _get_aws_bin_path()
 
     if _k is None or _s is None or _n is None:
         _p('missing credentials')
@@ -43,8 +44,8 @@ def _s3():
     _n = 'bkt-' + _n
 
     c = 'AWS_ACCESS_KEY_ID={} AWS_SECRET_ACCESS_KEY={} ' \
-        '{} s3 sync {} s3://{} --dryrun'.format(_get_aws_bin_path())
-    c = c.format(_k, _s, fol, _n)
+        '{} s3 sync {} s3://{} --dryrun'
+    c = c.format(_k, _s, _bin, fol, _n)
     rv = sp.run(c, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
     _t = datetime.datetime.now()
     if rv.returncode == 0:
