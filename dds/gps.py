@@ -50,6 +50,7 @@ def gps_measure(timeout=3):
 
     # real measure
     t = timeout
+    # todo > do all this GPS way easier
     g = gps_get_rmc_data(timeout=t)
     if g:
         lat = '{:+.6f}'.format(g[0])
