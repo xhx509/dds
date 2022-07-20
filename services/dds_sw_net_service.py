@@ -109,6 +109,9 @@ def main():
 
 if __name__ == '__main__':
 
+    # check activity with:
+    #   $ sudo systemctl stats unit_dds_switch_net.service
+
     _only_one_of_me('dds-net')
     _w_pid('dds-net')
 
