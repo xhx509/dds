@@ -1,11 +1,23 @@
 #!/usr/bin/env bash
 VENV=/home/pi/li/venv
 FOL_DDS=/home/pi/li/dds
+FOL_DDT=/home/pi/li/ddh_tools
 
 
 # abort upon any error
 echo; echo; set -e; echo
 trap 'echo ‘$BASH_COMMAND’ TRAPPED! rv $?; cd $FOL_DDS' EXIT
+
+
+ping -q -c 1 -W 1 www.google.com
+rv=$?
+if [ $rv -eq 0 ]; then
+    echo;  echo 'R > we have internet, updating...'
+    $FOL_DDT/dt_update_python_mat.sh
+    $FOL_DDT/dt_update_python_ddh_dds.sh
+else
+    echo; echo 'R > NO internet, NO updating'
+fi
 
 
 # fill AWS vars
@@ -42,6 +54,6 @@ $VENV/bin/python services/dds_cnv_service.py &
 
 
 
-echo; echo 'R > calling python code'
+echo; echo 'R > calling DDS main code'
 sudo chown -R pi:pi $FOL_DDS
 cd $FOL_DDS && $VENV/bin/python main.py
