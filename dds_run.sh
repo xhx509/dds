@@ -3,15 +3,9 @@ VENV=/home/pi/li/venv
 FOL_DDS=/home/pi/li/dds
 
 
-# for crontab: detect DDS already running
-ps aux | egrep -i "dds_run.sh" | grep -v grep
-rv=$?
-if [ $rv -eq 0 ]; then exit 0; fi
-
-
 # abort upon any error
 echo; echo; set -e; echo
-trap 'echo ‘$BASH_COMMAND’ TRAPPED! rv $?; cd $FOL_DDH' EXIT
+trap 'echo ‘$BASH_COMMAND’ TRAPPED! rv $?; cd $FOL_DDS' EXIT
 
 
 # fill AWS vars
