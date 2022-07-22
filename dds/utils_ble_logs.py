@@ -69,7 +69,7 @@ def l_e_(s): _l_l_(s, PC.R)
 g_last_time_track_log = time.perf_counter()
 
 
-def log_tracking_update(lat, lon):
+def log_tracking_add(lat, lon):
     global g_last_time_track_log
     now = time.perf_counter()
     if g_last_time_track_log + 10 < now:

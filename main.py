@@ -12,7 +12,6 @@ from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
 from mat.ddh_shared import send_ddh_udp_gui as _u, \
     ddh_check_conf_json_file, \
     ddh_get_macs_from_json_file
-from services.utils import check_dds_services
 from settings.ctx import macs_color_create_folder, \
     macs_color_show_at_boot, \
     op_conditions_met, ble_get_antenna_type, \
@@ -36,12 +35,11 @@ if __name__ == '__main__':
 
     gps_connect_shield()
     gps_wait_for_it_at_boot()
-    lat, lon, dt_gps, speed = gps_measure()
-    gps_clock_sync_if_so(dt_gps)
-    # check_dds_services()
+    lat, lon, tg, speed = gps_measure()
+    gps_clock_sync_if_so(tg)
     sns_notify_ddh_booted(lat, lon)
 
-    macs_mon = ddh_get_macs_from_json_file()
+    m_j = ddh_get_macs_from_json_file()
 
     while 1:
         gps_tell_vessel_name()
@@ -50,13 +48,14 @@ if __name__ == '__main__':
             time.sleep(1)
             continue
 
-        g = lat, lon, dt_gps, speed
-        log_tracking_update(lat, lon)
-        gps_clock_sync_if_so(dt_gps)
+        lat, lon, tg, speed = g
+        log_tracking_add(lat, lon)
+        gps_clock_sync_if_so(tg)
+
         if op_conditions_met(speed):
             ble_flag_dl()
             h, h_d = ble_get_antenna_type()
-            args = (macs_mon, lat, lon, dt_gps, h, h_d)
+            args = (m_j, lat, lon, tg, h, h_d)
             ble_loop(*args)
         ble_un_flag_dl()
         sns_serve()

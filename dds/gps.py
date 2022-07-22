@@ -49,9 +49,7 @@ def gps_measure(timeout=3):
         return lat, lon, datetime.datetime.utcnow(), 1
 
     # real measure
-    t = timeout
-    # todo > do all this GPS way easier
-    g = gps_get_rmc_data(timeout=t)
+    g = gps_get_rmc_data()
     if g:
         lat = '{:+.6f}'.format(g[0])
         lon = '{:+.6f}'.format(g[1])
@@ -66,8 +64,6 @@ def gps_measure(timeout=3):
 
 
 def gps_clock_sync_if_so(dt_gps_utc):
-
-    # todo: on RPi, test this GPS clock sync
 
     utc_now = datetime.datetime.utcnow()
     diff_secs = abs((dt_gps_utc - utc_now).total_seconds())
