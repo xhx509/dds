@@ -33,6 +33,7 @@ sns_en = True
 # BLE: enabled or not + switch capability
 ble_en = True
 sw_ble_en = True
+req_reset_mac_cc26x2r = ''
 
 
 # cell shield: present or not

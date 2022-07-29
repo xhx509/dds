@@ -24,15 +24,6 @@ dds/__pycache__/
 
 
 
-# IDE
-.idea/
-
-# C extensions
-*.so
-
-# LID files
-*.lid
-
 # Distribution / packaging
 .Python
 build/

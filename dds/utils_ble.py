@@ -22,12 +22,14 @@ from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, \
     get_dds_aws_has_something_to_do_flag, \
     get_dds_folder_path_macs_black
 from mat.dds_states import *
+from settings import ctx
 from settings.ctx import hook_ble_purge_this_mac_dl_files_folder, \
     hook_ble_purge_black_macs_on_boot, macs_color_create_folder
 
 
 TIME_IGNORE_TOO_ERROR = 600
 TIME_IGNORE_ONE_ERROR = 30
+g_logger_errors = {}
 
 
 def ble_debug_hooks_at_boot():
@@ -136,8 +138,11 @@ def _ble_interact_w_logger(mac, info: str, h, g):
         # track logger errors
         _add_logger_errors_to_sns_if_any(rv, mac, lat, lon)
 
-
-g_logger_errors = {}
+        # hack for loggers on their way to fail 5 times
+        v = g_logger_errors[mac] + 1
+        if v == 2 and utils_logger_is_cc26x2r(mac, info):
+            ctx.req_reset_mac_cc26x2r = mac
+            l_d_('[ BLE ] set flag req_reset_mac_cc26x2r')
 
 
 def _add_logger_errors_to_sns_if_any(rv, mac, lat, lon):
@@ -156,6 +161,7 @@ def _add_logger_errors_to_sns_if_any(rv, mac, lat, lon):
     v = g_logger_errors[mac] + 1
     if v > 5:
         v = 5
+
     if v == 5:
         sns_notify_logger_error(mac, lat, lon)
         rm_mac_orange(mac)

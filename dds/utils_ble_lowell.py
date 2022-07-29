@@ -101,6 +101,11 @@ def ble_li_gfv(lc):
     ble_ok('GFV {}'.format(rv))
 
 
+def ble_li_rst(lc):
+    rv = lc.ble_cmd_rst()
+    ble_ok('RST {}'.format(rv))
+
+
 def ble_li_bsy(lc):
     rv = None
     for i in range(3):

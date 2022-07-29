@@ -166,6 +166,15 @@ def utils_ble_cc26x2r_interact(lc, g):
     if not lc.open():
         ble_die('cannot connect {}'.format(lc.address))
 
+    # ----------------------------------
+    # trick after many bad interactions
+    # ----------------------------------
+    if ctx.req_reset_mac_cc26x2r == lc.address:
+        ctx.req_reset_mac_cc26x2r = ''
+        l_d_('[ BLE ] found flag req_reset_mac_cc26x2r, reset logger')
+        ble_li_rst(lc)
+        return False
+
     sn = ddh_get_json_mac_dns(lc.address)
 
     ble_li_gfv(lc)
