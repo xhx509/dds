@@ -13,9 +13,8 @@ import datetime
 from mat.dds_states import STATE_DDS_NOTIFY_CLOUD
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance, linux_is_rpi
 from multiprocessing import Process
-
 from settings import ctx
-from settings.ctx import ensure_services_working_directory
+
 
 lg = DDSLogs('aws')
 
@@ -66,7 +65,6 @@ def _s3():
 
 def _start_dds_aws_s3_service():
 
-    ensure_services_working_directory()
     ensure_we_run_only_one_instance('dds_aws')
     linux_app_write_pid('dds_aws')
 

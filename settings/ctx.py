@@ -199,12 +199,3 @@ def ble_un_flag_dl():
 
 def ble_un_flag_dl_at_boot():
     return ble_un_flag_dl()
-
-
-def ensure_services_working_directory(s):
-    assert s in ('AWS', 'CNV')
-    f = os.getcwd()
-    print('[ {} ] current working directory is {}'.format(s, f))
-    f = str(get_dds_folder_path_root()) + '/services'
-    os.chdir(f)
-    print('[ {} ] changed working directory to {}'.format(s, f))
