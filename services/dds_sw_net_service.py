@@ -8,12 +8,10 @@ import socket
 import subprocess as sp
 import sys
 import time
-from dds_logs import DDSLogs
 
 
 STATE_DDS_NOTIFY_NET_VIA = 'net_via'
 DDH_GUI_UDP_PORT = 12349
-lg = DDSLogs('net')
 _sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
@@ -60,7 +58,6 @@ def _sh(s: str) -> bool:
 
 
 def _p(s):
-    lg.a(s)
     print(s)
     # w/o next line, does not appear in journalctl
     sys.stdout.flush()
