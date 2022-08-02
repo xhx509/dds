@@ -31,7 +31,7 @@ sudo setcap 'cap_net_raw,cap_net_admin+eip' $BLUEPY_HELPER
 echo; echo 'R > calling DDS main code'
 sudo chown -R pi:pi $FOL_DDS
 source $VENV/bin/activate
-pkill -F /tmp/dds-core.pid || true
-pkill -F /tmp/dds-cnv.pid || true
-pkill -F /tmp/dds-aws.pid || true
+pkill -F /tmp/dds_core.pid || true
+pkill -F /tmp/dds_cnv.pid || true
+pkill -F /tmp/dds_aws.pid || true
 cd $FOL_DDS && $VENV/bin/python main.py
