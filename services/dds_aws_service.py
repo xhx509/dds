@@ -81,6 +81,7 @@ def _start_dds_aws_s3_service():
             time.sleep(60)
             continue
 
+        # todo > do a 'processing...' state _u(
         rv = _s3()
         if rv == 0:
             time.sleep(150)
