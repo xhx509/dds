@@ -28,7 +28,7 @@ sudo setcap 'cap_net_raw,cap_net_admin+eip' /usr/sbin/ifmetric
 sudo setcap 'cap_net_raw,cap_net_admin+eip' $BLUEPY_HELPER
 
 
-echo; echo 'R > calling DDS main code'
+echo; echo 'R > calling DDS main python code'
 sudo chown -R pi:pi $FOL_DDS
 source $VENV/bin/activate
 pkill -F /tmp/dds_core.pid || true
