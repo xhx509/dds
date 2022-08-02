@@ -3,8 +3,7 @@
 
 import os
 import time
-print(os.getcwd())
-from dds_logs import DDSLogs
+from services.dds_logs import DDSLogs
 from dds.utils_ble_logs import l_e_
 from mat.ddh_shared import send_ddh_udp_gui as _u, \
     get_dds_folder_path_dl_files, \
