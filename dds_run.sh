@@ -4,7 +4,7 @@ FOL_DDS=/home/pi/li/dds
 
 
 # abort upon any error
-echo; echo; set -e; echo
+set -e
 trap 'echo ‘$BASH_COMMAND’ TRAPPED! rv $?; cd $FOL_DDS' EXIT
 
 

@@ -2,7 +2,7 @@ import datetime
 import os
 import threading
 import time
-from dds.logs import DDSLogs
+from mat.dds_logs import DDSLogs
 from dds.utils_ble_logs import l_e_
 from mat.ddh_shared import get_dds_folder_path_dl_files, ddh_convert_lid_to_csv, get_dds_is_ble_downloading_flag
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
