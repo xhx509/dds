@@ -106,7 +106,7 @@ def gps_measure():
         l_d_('[ GPS ] hook_gps_error_measurement_forced')
         return
 
-    if cu.hook_gps_dummy_measurement or not linux_is_rpi():
+    if cu.hook_gps_dummy_measurement:
         # l_d_('[ GPS ] hook_gps_dummy_measurement')
         time.sleep(.5)
         lat = '{:+.6f}'.format(38.000000000)

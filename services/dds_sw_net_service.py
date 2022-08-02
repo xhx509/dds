@@ -6,7 +6,7 @@ import socket
 import subprocess as sp
 import sys
 import time
-from dds_log_service import DDSLogs
+from dds.logs import DDSLogs
 
 
 STATE_DDS_NOTIFY_NET_VIA = 'net_via'
@@ -114,8 +114,8 @@ if __name__ == '__main__':
     # check activity with:
     #   $ sudo systemctl status unit_dds_switch_net.service
 
-    _only_one_of_me('dds-net')
-    _w_pid('dds-net')
+    _only_one_of_me('dds_net')
+    _w_pid('dds_net')
 
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     _p('log created on {}'.format(now))

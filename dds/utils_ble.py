@@ -43,6 +43,7 @@ def ble_debug_hooks_at_boot():
 def _ble_set_aws_flag():
     flag = get_dds_aws_has_something_to_do_flag()
     pathlib.Path(flag).touch()
+    l_d_('[ BLE ] flag ddh_aws_has_something_to_do set')
 
 
 def _ble_scan(h) -> dict:
@@ -139,6 +140,8 @@ def _ble_interact_w_logger(mac, info: str, h, g):
         _add_logger_errors_to_sns_if_any(rv, mac, lat, lon)
 
         # hack for loggers on their way to fail 5 times
+        if rv == 0:
+            return
         v = g_logger_errors[mac] + 1
         if v == 2 and utils_logger_is_cc26x2r(mac, info):
             ctx.req_reset_mac_cc26x2r = mac

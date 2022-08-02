@@ -2,9 +2,12 @@ import datetime
 import os
 import threading
 import time
+from dds.logs import DDSLogs
+from dds.utils_ble_logs import l_e_
 from mat.ddh_shared import get_dds_folder_path_dl_files, ddh_convert_lid_to_csv, get_dds_is_ble_downloading_flag
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
-from dds_log_service import DDSLogs
+from multiprocessing import Process
+from settings import ctx
 
 
 lg = DDSLogs('cnv')
@@ -17,7 +20,7 @@ def _p(s):
 
 def _cnv(m):
     fol = str(get_dds_folder_path_dl_files())
-    s = 'started thread {} on fol {}'
+    s = '[ CNV ] started thread {} on fol {}'
     _p(s.format(m, fol))
     ddh_convert_lid_to_csv(fol, m)
 
@@ -31,10 +34,10 @@ def _fxn():
     _th_p.start()
 
 
-if __name__ == '__main__':
+def _start_dds_cnv_service():
 
-    ensure_we_run_only_one_instance('dds-cnv')
-    linux_app_write_pid('dds-cnv')
+    ensure_we_run_only_one_instance('dds_cnv')
+    linux_app_write_pid('dds_cnv')
 
     flag = get_dds_is_ble_downloading_flag()
 
@@ -47,5 +50,24 @@ if __name__ == '__main__':
             _p('not converting while BLE downloading')
             time.sleep(60)
             break_t += 1
+
+        _p('[ CNV ] session')
         _fxn()
         time.sleep(3600)
+
+
+def start_dds_cnv_service():
+    p = Process(target=_start_dds_cnv_service)
+    p.start()
+    ctx.proc_cnv = p
+
+
+def is_dds_cnv_service_alive():
+    if not ctx.proc_cnv.is_alive():
+        l_e_('[ CNV ] DDS CNV service not alive')
+
+
+if __name__ == '__main__':
+    start_dds_cnv_service()
+
+

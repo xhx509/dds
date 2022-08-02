@@ -12,6 +12,8 @@ from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
 from mat.ddh_shared import send_ddh_udp_gui as _u, \
     ddh_check_conf_json_file, \
     ddh_get_macs_from_json_file
+from services.dds_aws_service import start_dds_aws_s3_service, is_dds_aws_s3_service_alive
+from services.dds_cnv_service import start_dds_cnv_service, is_dds_cnv_service_alive
 from settings.ctx import macs_color_create_folder, \
     macs_color_show_at_boot, \
     op_conditions_met, ble_get_antenna_type, \
@@ -20,7 +22,10 @@ from settings.ctx import macs_color_create_folder, \
 
 if __name__ == '__main__':
 
-    ensure_we_run_only_one_instance('dds-core')
+    ensure_we_run_only_one_instance('dds_core')
+
+    start_dds_aws_s3_service()
+    start_dds_cnv_service()
 
     ble_un_flag_dl_at_boot()
     log_core_start_at_boot()
@@ -30,7 +35,7 @@ if __name__ == '__main__':
     macs_color_show_at_boot()
     ble_debug_hooks_at_boot()
     ddh_check_conf_json_file()
-    linux_app_write_pid('dds-core')
+    linux_app_write_pid('dds_core')
     _u(STATE_DDS_BLE_APP_BOOT)
 
     gps_connect_shield()
@@ -42,6 +47,9 @@ if __name__ == '__main__':
     m_j = ddh_get_macs_from_json_file()
 
     while 1:
+        is_dds_aws_s3_service_alive()
+        is_dds_cnv_service_alive()
+
         gps_tell_vessel_name()
         g = gps_measure()
         if not g:

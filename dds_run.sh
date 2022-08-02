@@ -28,18 +28,10 @@ sudo setcap 'cap_net_raw,cap_net_admin+eip' /usr/sbin/ifmetric
 sudo setcap 'cap_net_raw,cap_net_admin+eip' $BLUEPY_HELPER
 
 
-echo; echo 'R > pseudo-services'
+echo; echo 'R > calling DDS main code'
+sudo chown -R pi:pi $FOL_DDS
 source $VENV/bin/activate
 pkill -F /tmp/dds-core.pid || true
 pkill -F /tmp/dds-cnv.pid || true
 pkill -F /tmp/dds-aws.pid || true
-cd $FOL_DDS
-$VENV/bin/python main.py &
-$VENV/bin/python services/dds_aws_service.py &
-$VENV/bin/python services/dds_cnv_service.py &
-
-
-
-echo; echo 'R > calling DDS main code'
-sudo chown -R pi:pi $FOL_DDS
 cd $FOL_DDS && $VENV/bin/python main.py

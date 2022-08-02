@@ -3,6 +3,8 @@
 
 import os
 import time
+from dds.logs import DDSLogs
+from dds.utils_ble_logs import l_e_
 from mat.ddh_shared import send_ddh_udp_gui as _u, \
     get_dds_folder_path_dl_files, \
     get_dds_aws_has_something_to_do_flag
@@ -10,8 +12,9 @@ import subprocess as sp
 import datetime
 from mat.dds_states import STATE_DDS_NOTIFY_CLOUD
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance, linux_is_rpi
-from dds_log_service import DDSLogs
+from multiprocessing import Process
 
+from settings import ctx
 
 lg = DDSLogs('aws')
 
@@ -60,10 +63,10 @@ def _s3():
     return 2
 
 
-def main():
+def _start_dds_aws_s3_service():
 
-    ensure_we_run_only_one_instance('dds-aws')
-    linux_app_write_pid('dds-aws')
+    ensure_we_run_only_one_instance('dds_aws')
+    linux_app_write_pid('dds_aws')
 
     f = str(get_dds_aws_has_something_to_do_flag())
 
@@ -72,8 +75,8 @@ def main():
 
     while 1:
         if os.path.isfile(f):
-            _p('flag found')
             os.unlink(f)
+            _p('[ AWS ] flag ddh_aws_has_something_to_do cleared')
             _s3()
             time.sleep(60)
             continue
@@ -85,6 +88,17 @@ def main():
             time.sleep(60)
 
 
+def start_dds_aws_s3_service():
+    p = Process(target=_start_dds_aws_s3_service)
+    p.start()
+    ctx.proc_aws = p
+
+
+def is_dds_aws_s3_service_alive():
+    if not ctx.proc_aws.is_alive():
+        l_e_('[ AWS ] DDS AWS S3 service not alive')
+
+
 # debug
 if __name__ == '__main__':
-    main()
+    start_dds_aws_s3_service()

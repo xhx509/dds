@@ -5,6 +5,7 @@ from dds.sns import sns_notify_dissolved_oxygen_zeros
 from dds.utils_ble_lowell import *
 from mat.crc import calculate_local_file_crc
 from mat.dds_states import STATE_DDS_BLE_DOWNLOAD_SLOW, STATE_DDS_BLE_DEPLOY_FALLBACK, STATE_DDS_REQUEST_PLOT
+from mat.utils import linux_is_rpi3
 from settings import ctx
 from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, get_dl_folder_path_from_mac
 from settings.ctx import hook_ble_gdo_dummy_measurement, hook_ble_create_dummy_file
@@ -206,6 +207,8 @@ def utils_ble_cc26x2r_interact(lc, g):
     # --------------------------------------
     l_i_('[ BLE ] interact -> normal download mode')
     lc.ble_cmd_slw_ensure('off')
+    if linux_is_rpi3():
+        lc.ble_cmd_slw_ensure('on')
     rv, dl = _cc26x2r_dwg_files(lc, ls)
     if not rv:
         _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_SLOW, sn))

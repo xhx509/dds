@@ -51,6 +51,11 @@ hook_ble_purge_this_mac_dl_files_folder = False
 hook_ble_create_dummy_file = True
 
 
+# contains process handlers
+proc_aws = None
+proc_cnv = None
+
+
 # to re-deploy
 mat_cfg_do1_fallback = {
         "DFN": "fal_do1",
