@@ -8,7 +8,7 @@ from mat.ddh_shared import get_dds_folder_path_dl_files, ddh_convert_lid_to_csv,
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
 from multiprocessing import Process
 from settings import ctx
-
+from settings.ctx import ensure_services_working_directory
 
 lg = DDSLogs('cnv')
 
@@ -36,6 +36,7 @@ def _fxn():
 
 def _start_dds_cnv_service():
 
+    ensure_services_working_directory()
     ensure_we_run_only_one_instance('dds_cnv')
     linux_app_write_pid('dds_cnv')
 
