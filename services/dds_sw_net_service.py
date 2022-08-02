@@ -8,7 +8,7 @@ import socket
 import subprocess as sp
 import sys
 import time
-from mat.dds_logs import DDSLogs
+from dds_logs import DDSLogs
 
 
 STATE_DDS_NOTIFY_NET_VIA = 'net_via'
