@@ -124,6 +124,7 @@ def gps_measure():
         b = sp.readall()
         g = _gps_parse_rmc_frame(b)
         if g:
+            g = list(g)
             lat = '{:+.6f}'.format(g[0])
             lon = '{:+.6f}'.format(g[1])
             if g[3] == '':
