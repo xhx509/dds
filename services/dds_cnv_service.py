@@ -2,12 +2,16 @@ import datetime
 import os
 import threading
 import time
+from mat.dds_states import STATE_DDS_NOTIFY_CONVERSION
 from services.dds_logs import DDSLogs
 from dds.utils_ble_logs import l_e_
-from mat.ddh_shared import get_dds_folder_path_dl_files, ddh_convert_lid_to_csv, get_dds_is_ble_downloading_flag
+from mat.ddh_shared import get_dds_folder_path_dl_files, ddh_convert_lid_to_csv, get_dds_is_ble_downloading_flag, \
+    PID_FILE_DDS_CNV
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
 from multiprocessing import Process
 from settings import ctx
+from mat.ddh_shared import send_ddh_udp_gui as _u
+
 
 lg = DDSLogs('cnv')
 
@@ -25,6 +29,7 @@ def _cnv(m):
 
 
 def _fxn():
+    _p('[ CNV ] session')
     _th_o = threading.Thread(target=_cnv, args=('_DissolvedOxygen', ))
     _th_t = threading.Thread(target=_cnv, args=('_Temperature', ))
     _th_p = threading.Thread(target=_cnv, args=('_Pressure', ))
@@ -36,23 +41,25 @@ def _fxn():
 def _start_dds_cnv_service():
 
     ensure_we_run_only_one_instance('dds_cnv')
-    linux_app_write_pid('dds_cnv')
+    linux_app_write_pid(PID_FILE_DDS_CNV)
 
-    flag = get_dds_is_ble_downloading_flag()
+    flag_dl = get_dds_is_ble_downloading_flag()
 
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    _p('log created on {}'.format(now))
+    _p('[ CNV ] log created on {}'.format(now))
 
+    i = 0
     while 1:
-        break_t = 0
-        while os.path.isfile(flag) and break_t < 5:
-            _p('not converting while BLE downloading')
-            time.sleep(60)
-            break_t += 1
+        while os.path.isfile(flag_dl):
+            _p('[ CNV ] not converting while BLE downloading')
 
-        _p('[ CNV ] session')
-        _fxn()
-        time.sleep(3600)
+        # every hour
+        if i % 360 == 0:
+            _fxn()
+
+        _u('{}/pong'.format(STATE_DDS_NOTIFY_CONVERSION))
+        time.sleep(10)
+        i += 1
 
 
 def start_dds_cnv_service():

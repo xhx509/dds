@@ -11,7 +11,7 @@ from mat.dds_states import STATE_DDS_BLE_APP_BOOT
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
 from mat.ddh_shared import send_ddh_udp_gui as _u, \
     ddh_check_conf_json_file, \
-    ddh_get_macs_from_json_file
+    ddh_get_macs_from_json_file, PID_FILE_DDS
 from services.dds_aws_service import start_dds_aws_s3_service, is_dds_aws_s3_service_alive
 from services.dds_cnv_service import start_dds_cnv_service, is_dds_cnv_service_alive
 from settings.ctx import macs_color_create_folder, \
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     macs_color_show_at_boot()
     ble_debug_hooks_at_boot()
     ddh_check_conf_json_file()
-    linux_app_write_pid('dds_core')
+    linux_app_write_pid(PID_FILE_DDS)
     _u(STATE_DDS_BLE_APP_BOOT)
 
     gps_connect_shield()

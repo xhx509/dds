@@ -7,7 +7,7 @@ from services.dds_logs import DDSLogs
 from dds.utils_ble_logs import l_e_
 from mat.ddh_shared import send_ddh_udp_gui as _u, \
     get_dds_folder_path_dl_files, \
-    get_dds_aws_has_something_to_do_flag
+    get_dds_aws_has_something_to_do_flag, PID_FILE_DDS_AWS
 import subprocess as sp
 import datetime
 from mat.dds_states import STATE_DDS_NOTIFY_CLOUD
@@ -40,6 +40,8 @@ def _s3():
     _n = os.getenv('DDH_AWS_NAME')
     _bin = _get_aws_bin_path()
 
+    _u('{}/processing'.format(STATE_DDS_NOTIFY_CLOUD))
+
     if _k is None or _s is None or _n is None:
         _p('missing credentials')
         _u('{}/log-in'.format(STATE_DDS_NOTIFY_CLOUD))
@@ -66,27 +68,30 @@ def _s3():
 def _start_dds_aws_s3_service():
 
     ensure_we_run_only_one_instance('dds_aws')
-    linux_app_write_pid('dds_aws')
+    linux_app_write_pid(PID_FILE_DDS_AWS)
 
     f = str(get_dds_aws_has_something_to_do_flag())
 
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     _p('log created on {}'.format(now))
 
+    i = 0
     while 1:
-        if os.path.isfile(f):
-            os.unlink(f)
-            _p('[ AWS ] flag ddh_aws_has_something_to_do cleared')
-            _s3()
-            time.sleep(60)
-            continue
+        # every 30 seconds
+        if i % 3 == 0:
+            if os.path.isfile(f):
+                os.unlink(f)
+                _p('[ AWS ] flag ddh_aws_has_something_to_do cleared')
+                _s3()
+                continue
 
-        # todo > do a 'processing...' state _u(
-        rv = _s3()
-        if rv == 0:
-            time.sleep(150)
-        else:
-            time.sleep(60)
+        # every 300 seconds = 5 minutes
+        if i % 30:
+            _s3()
+
+        _u('{}/pong'.format(STATE_DDS_NOTIFY_CLOUD))
+        time.sleep(10)
+        i += 1
 
 
 def start_dds_aws_s3_service():
