@@ -61,11 +61,9 @@ if __name__ == '__main__':
         gps_clock_sync_if_so(tg)
 
         if op_conditions_met(speed):
-            ble_flag_dl()
             h, h_d = ble_get_antenna_type()
             args = (m_j, lat, lon, tg, h, h_d)
             ble_loop(*args)
-        ble_un_flag_dl()
         sns_serve()
 
         # required

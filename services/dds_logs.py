@@ -26,12 +26,10 @@ class DDSLogs:
         self.f_name = self._gen_log_file_name(label)
 
     def a(self, s):
+        if type(s) is bytes:
+            s = s.decode()
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        s = '{} [ {} ] {}'.format(now, self.label.upper(), s)
+        s = '{} | [ {} ] {}'.format(now, self.label.upper(), s)
         with open(self.f_name, 'a') as f:
             f.write(s + '\n')
-
-
-if __name__ == '__main__':
-    lg = DDSLogs('my_log_Test')
-    lg.a('iuhu')
+        print(s)

@@ -4,7 +4,6 @@
 import os
 import time
 from services.dds_logs import DDSLogs
-from dds.utils_ble_logs import l_e_
 from mat.ddh_shared import send_ddh_udp_gui as _u, \
     get_dds_folder_path_dl_files, \
     get_dds_aws_has_something_to_do_flag, PID_FILE_DDS_AWS
@@ -17,13 +16,6 @@ from settings import ctx
 
 
 lg = DDSLogs('aws')
-
-
-def _p(s):
-    if type(s) is bytes:
-        s = s.decode()
-    lg.a(s)
-    print(s)
 
 
 def _get_aws_bin_path():
@@ -40,10 +32,10 @@ def _s3():
     _n = os.getenv('DDH_AWS_NAME')
     _bin = _get_aws_bin_path()
 
-    _u('{}/processing'.format(STATE_DDS_NOTIFY_CLOUD))
+    _u('{}/busy'.format(STATE_DDS_NOTIFY_CLOUD))
 
     if _k is None or _s is None or _n is None:
-        _p('missing credentials')
+        lg.a('missing credentials')
         _u('{}/log-in'.format(STATE_DDS_NOTIFY_CLOUD))
         return 1
     _n = 'bkt-' + _n
@@ -55,13 +47,13 @@ def _s3():
     _t = datetime.datetime.now()
     if rv.returncode == 0:
         _u('{}/OK'.format(STATE_DDS_NOTIFY_CLOUD))
-        _p('good cloud sync on {}'.format(_t))
-        _p(rv.stdout)
+        lg.a('good cloud sync on {}'.format(_t))
+        lg.a(rv.stdout)
         return 0
 
     _u('{}/ERR'.format(STATE_DDS_NOTIFY_CLOUD))
-    _p('ERR cloud sync on {}'.format(_t))
-    _p(rv.stderr)
+    lg.a('error: cloud sync on {}'.format(_t))
+    lg.a(rv.stderr)
     return 2
 
 
@@ -73,7 +65,7 @@ def _start_dds_aws_s3_service():
     f = str(get_dds_aws_has_something_to_do_flag())
 
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    _p('log created on {}'.format(now))
+    lg.a('log created on {}'.format(now))
 
     i = 0
     while 1:
@@ -81,7 +73,7 @@ def _start_dds_aws_s3_service():
         if i % 3 == 0:
             if os.path.isfile(f):
                 os.unlink(f)
-                _p('[ AWS ] flag ddh_aws_has_something_to_do cleared')
+                lg.a('flag ddh_aws_has_something_to_do cleared')
                 _s3()
                 continue
 
@@ -102,7 +94,7 @@ def start_dds_aws_s3_service():
 
 def is_dds_aws_s3_service_alive():
     if not ctx.proc_aws.is_alive():
-        l_e_('[ AWS ] DDS AWS S3 service not alive')
+        lg.a('warning: DDS AWS S3 service not alive')
 
 
 # debug

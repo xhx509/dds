@@ -24,8 +24,7 @@ from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, \
 from mat.dds_states import *
 from settings import ctx
 from settings.ctx import hook_ble_purge_this_mac_dl_files_folder, \
-    hook_ble_purge_black_macs_on_boot, macs_color_create_folder
-
+    hook_ble_purge_black_macs_on_boot, macs_color_create_folder, ble_flag_dl, ble_un_flag_dl
 
 TIME_IGNORE_TOO_ERROR = 600
 TIME_IGNORE_ONE_ERROR = 30
@@ -193,5 +192,7 @@ def ble_loop(macs_mon, _lat, _lon, _dt, _h, _h_desc):
             continue
 
         g = (_lat, _lon, _dt)
+        ble_flag_dl()
         _ble_interact_w_logger(mac, model, _h, g)
+        ble_un_flag_dl()
         _ble_set_aws_flag()
