@@ -81,7 +81,7 @@ def gps_connect_shield():
         return
 
     if hook_gps_dummy_measurement:
-        l_d_('[ BLE ] dummy GPS connected so not configuring it')
+        l_d_('[ BLE ] dummy GPS connected, not configuring it')
         return
 
     sp = serial.Serial(PORT_CTRL, baudrate=115200,

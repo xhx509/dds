@@ -4,8 +4,8 @@ import threading
 import time
 from mat.dds_states import STATE_DDS_NOTIFY_CONVERSION
 from services.dds_logs import DDSLogs
-from mat.ddh_shared import get_dds_folder_path_dl_files, ddh_convert_lid_to_csv, get_dds_is_ble_downloading_flag, \
-    PID_FILE_DDS_CNV
+from mat.ddh_shared import get_dds_folder_path_dl_files, \
+    ddh_convert_lid_to_csv, get_dds_is_ble_downloading_flag, PID_FILE_DDS_CNV
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
 from multiprocessing import Process
 from settings import ctx

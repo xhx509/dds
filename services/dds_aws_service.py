@@ -78,7 +78,7 @@ def _start_dds_aws_s3_service():
                 continue
 
         # every 300 seconds = 5 minutes
-        if i % 30:
+        if i % 30 == 0:
             _s3()
 
         _u('{}/pong'.format(STATE_DDS_NOTIFY_CLOUD))

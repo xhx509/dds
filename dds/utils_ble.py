@@ -29,6 +29,17 @@ from settings.ctx import hook_ble_purge_this_mac_dl_files_folder, \
 TIME_IGNORE_TOO_ERROR = 600
 TIME_IGNORE_ONE_ERROR = 30
 g_logger_errors = {}
+g_ts_scan_banner = 0
+
+
+def _print_scan_banner():
+    global g_ts_scan_banner
+    now = time.perf_counter()
+    _first_banner = g_ts_scan_banner == 0
+    _expired_banner = now > g_ts_scan_banner + 300
+    if _first_banner or _expired_banner:
+        g_ts_scan_banner = now + 300
+        l_i_('[ BLE ] scanning ...')
 
 
 def ble_debug_hooks_at_boot():
@@ -49,13 +60,18 @@ def _ble_scan(h) -> dict:
     _u(STATE_DDS_BLE_SCAN)
     li = {}
 
+    _print_scan_banner()
+    time.sleep(.1)
+
     try:
-        time.sleep(.1)
         # {<mac_1>: 'LOGGER_TYPE', ...}
         sr = ble_scan_bluepy(h)
+
         for i in sr:
             if not type(i.rawData) is bytes:
+                # skips problems with Apple devices
                 continue
+
             for n in (b'DO-2',
                       b'DO-1',
                       b'MOANA',
@@ -78,8 +94,8 @@ def _ble_interact_w_logger(mac, info: str, h, g):
     # debug
     # l_d_('[ BLE ] forcing query of hardcoded mac')
     # hc_mac = '60:77:71:22:c8:6f'
-    # mac = hc_mac
     # hc_info = 'DO-2'
+    # mac = hc_mac
     # info = hc_info
 
     # debug: delete THIS logger's existing files
