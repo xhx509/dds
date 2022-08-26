@@ -8,6 +8,7 @@ def _is_rpi():
 
 
 def _folder_logs():
+    # todo > move this to mat.shared
     if _is_rpi():
         return Path.home() / 'li' / 'dds' / 'logs'
     return Path.home() / 'PycharmProjects' / 'dds' / 'logs'
