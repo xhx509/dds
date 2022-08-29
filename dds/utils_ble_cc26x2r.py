@@ -205,8 +205,10 @@ def utils_ble_cc26x2r_interact(lc, g):
     # --------------------------------------
     lg.a('BLE interact -> normal download mode')
     lc.ble_cmd_slw_ensure('off')
-    if linux_is_rpi3():
-        lc.ble_cmd_slw_ensure('on')
+
+    # if linux_is_rpi3():
+    lc.ble_cmd_slw_ensure('on')
+
     rv, dl = _cc26x2r_dwg_files(lc, ls)
     if not rv:
         _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_SLOW, sn))
