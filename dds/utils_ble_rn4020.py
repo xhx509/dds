@@ -1,13 +1,12 @@
 import os
 import time
-
 from dds.utils_ble_lowell import utils_ble_build_files_to_download_as_dict, ble_ok, ble_die, ble_li_sws, ble_li_btc, \
     ble_li_time_sync, ble_li_ls_all, ble_li_run, utils_ble_set_last_haul
 from mat.ddh_shared import send_ddh_udp_gui as _u
-from dds.utils_ble_logs import l_e_
 from mat.ddh_shared import get_dl_folder_path_from_mac
 from mat import data_file_factory
 from mat.dds_states import STATE_DDS_REQUEST_PLOT
+from dds.logs import lg_dds as lg
 
 
 def _get_files_rn4020(lc, ls):
@@ -26,7 +25,7 @@ def _get_files_rn4020(lc, ls):
         ble_ok('getting file {}, {} bytes'.format(name, size))
         data = lc.ble_cmd_get(name, size)
         if not data:
-            e = '[ BLE ] cannot get {}, size {}'
+            e = 'BLE cannot get {}, size {}'
             ble_die(e.format(name, size))
             return False, dl_ones_ok
         path = get_dl_folder_path_from_mac(lc.address) / name
@@ -38,7 +37,7 @@ def _get_files_rn4020(lc, ls):
         # --------------------------
         time.sleep(3)
         if not lc.ble_cmd_del(name):
-            e = '[ BLE ] cannot delete {}, size {}'
+            e = 'BLE cannot delete {}, size {}'
             ble_die(e.format(name, size))
             return False, dl_ones_ok
 
@@ -79,7 +78,7 @@ def utils_ble_rn4020_interact(lc, g):
         time.sleep(.5)
         ble_li_run(lc)
     else:
-        l_e_('error downloading files')
+        lg.a('BLE error downloading files')
         return
 
     # ----------------------------------

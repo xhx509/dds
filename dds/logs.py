@@ -1,23 +1,13 @@
 import datetime
 from pathlib import Path
-import os
-
-
-def _is_rpi():
-    return os.uname().nodename in ('raspberrypi', 'rpi')
-
-
-def _folder_logs():
-    # todo > move this to mat.shared
-    if _is_rpi():
-        return Path.home() / 'li' / 'dds' / 'logs'
-    return Path.home() / 'PycharmProjects' / 'dds' / 'logs'
+from mat.ddh_shared import get_dds_folder_path_logs
+from mat.utils import PrintColors as PC
 
 
 class DDSLogs:
     @staticmethod
     def _gen_log_file_name(lbl) -> str:
-        d = str(_folder_logs())
+        d = str(get_dds_folder_path_logs())
         Path(d).mkdir(parents=True, exist_ok=True)
         now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         return '{}/{}_{}.log'.format(d, lbl, now)
@@ -33,4 +23,19 @@ class DDSLogs:
         s = '{} | [ {} ] {}'.format(now, self.label.upper(), s)
         with open(self.f_name, 'a') as f:
             f.write(s + '\n')
-        print(s)
+
+        if 'error' in s:
+            PC.R(s)
+        elif 'debug' in s:
+            PC.B(s)
+        elif 'warning' in s:
+            PC.Y(s)
+        else:
+            PC.N(s)
+
+
+lg_dds = DDSLogs('dds')
+lg_aws = DDSLogs('aws')
+lg_cnv = DDSLogs('cnv')
+
+

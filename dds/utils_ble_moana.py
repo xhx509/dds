@@ -1,10 +1,10 @@
 import os
 import time
-from dds.utils_ble_logs import l_i_
 from dds.utils_ble_lowell import ble_die, ble_ok, utils_ble_set_last_haul, AppBLEException
 from mat.ddh_shared import get_dl_folder_path_from_mac
 from mat.ddh_shared import send_ddh_udp_gui as _u
 from mat.dds_states import STATE_DDS_REQUEST_PLOT
+from dds.logs import lg_dds as lg
 
 
 def _ble_moana_open(lc) -> bool:
@@ -36,7 +36,7 @@ def utils_ble_moana_interact(lc):
     # -----------------------------------
     # authentication sometimes fails
     # -----------------------------------
-    l_i_('[ BLE ] authenticating to logger')
+    lg.a('BLE error: authenticating to logger')
     if not lc.auth():
         ble_die('auth')
     ble_ok('authentication OK')
@@ -66,13 +66,13 @@ def utils_ble_moana_interact(lc):
         pass
 
     f_size = _ble_moana_get_size(lc)
-    s = '[ BLE ] #1, getting file {}, size {}'
-    l_i_(s.format(f_name, f_size))
+    s = 'BLE #1, getting file {}, size {}'
+    lg.a(s.format(f_name, f_size))
     d1 = lc.file_get(f_size)
 
     f_size = _ble_moana_get_size(lc)
-    s = '[ BLE ] #2, getting file {}, size {}'
-    l_i_(s.format(f_name, f_size))
+    s = 'BLE #2, getting file {}, size {}'
+    lg.a(s.format(f_name, f_size))
     d2 = lc.file_get(f_size)
 
     # ---------------------------------------------
@@ -82,7 +82,7 @@ def utils_ble_moana_interact(lc):
     i = d1.index(b'\x03')
     if d1[i:] != d2[i:]:
         ble_die('file_pseudo_crc')
-    l_i_('[ BLE ] moana file download twice and OK')
+    lg.a('BLE moana file download twice and OK')
     path = lc.file_save(fol, d1)
     if not path:
         ble_die('file_save')
@@ -90,7 +90,7 @@ def utils_ble_moana_interact(lc):
     # ------------------------------------
     # conversion of the file inside moana
     # ------------------------------------
-    l_i_('[ BLE ] converting file {}'.format(f_name))
+    lg.a('BLE converting file {}'.format(f_name))
     prefix_cnv = lc.file_cnv(path, fol, len(d1))
     if not prefix_cnv:
         ble_die('file conversion')

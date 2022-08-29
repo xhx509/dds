@@ -1,6 +1,6 @@
 import time
-from dds.utils_ble_logs import l_e_, l_i_
 from mat.ddh_shared import *
+from dds.logs import lg_dds as lg
 
 
 class AppBLEException(Exception):
@@ -8,12 +8,12 @@ class AppBLEException(Exception):
 
 
 def ble_die(e):
-    l_e_('[ BLE ] error interact -> {}'.format(e))
+    lg.a('BLE error: interact -> {}'.format(e))
     raise AppBLEException(e)
 
 
 def ble_ok(s):
-    l_i_('[ BLE ] interact -> {}'.format(s))
+    lg.a('BLE interact -> {}'.format(s))
 
 
 def check_local_file_exists(file_name, size, fol):
@@ -116,7 +116,7 @@ def ble_li_bsy(lc):
         time.sleep(3)
 
     if rv is None:
-        l_e_('BSY command got no answer')
+        lg.a('BLE error: BSY command got no answer')
     if rv == 'busy':
         ble_die('logger answered as busy')
 
@@ -155,7 +155,7 @@ def ble_li_gdo(lc):
     for i in range(3):
         dos, dop, dot = lc.ble_cmd_gdo()
         if dos == '' or (dos == '0000' and dop == '0000' and dot == '0000'):
-            l_e_('GDO bad -> {}'.format((dos, dop, dot)))
+            lg.a('BLE error: GDO bad -> {}'.format((dos, dop, dot)))
             time.sleep(2)
             continue
 

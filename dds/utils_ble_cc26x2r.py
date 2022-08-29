@@ -1,6 +1,3 @@
-import os
-import time
-from dds.utils_ble_logs import l_i_, l_e_, l_d_, l_w_
 from dds.sns import sns_notify_dissolved_oxygen_zeros
 from dds.utils_ble_lowell import *
 from mat.crc import calculate_local_file_crc
@@ -9,13 +6,14 @@ from mat.utils import linux_is_rpi3
 from settings import ctx
 from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, get_dl_folder_path_from_mac
 from settings.ctx import hook_ble_gdo_dummy_measurement, hook_ble_create_dummy_file
+from dds.logs import lg_dds as lg
 
 
 def _cc26x2r_rm_null_files(lc, ls):
 
     for name, size in ls.items():
         if name.endswith('lid') and int(size) == 0:
-            l_i_("[ BLE ] deleting 0-bytes file {}".format(name))
+            lg.a("BLE deleting 0-bytes file {}".format(name))
             rv = lc.ble_cmd_del(name)
             if not rv:
                 return False
@@ -36,14 +34,14 @@ def _cc26x2r_deploy(lc, ls: dict, g):
     # RE-DEPLOY DECISION based on MAT.cfg present or not
     # ---------------------------------------------------
     if 'MAT.cfg' in ls.keys():
-        l_i_('[ BLE ] interact -> re_deploy OK with existing MAT.cfg ')
+        lg.a('BLE interact -> re_deploy OK with existing MAT.cfg ')
         return
 
     # ------------------------------------------------
     # missing MAT.cfg file, we need a whole re-deploy
     # ------------------------------------------------
     _u(STATE_DDS_BLE_DEPLOY_FALLBACK)
-    l_i_('[ BLE ] --- logger has no MAT.cfg, providing one ---')
+    lg.a('BLE warning: logger has no MAT.cfg, providing one')
     if not lc.ble_cmd_stp():
         ble_die('error in re-deploy STP')
     if not lc.ble_cmd_stm():
@@ -78,7 +76,7 @@ def _cc26x2r_deploy(lc, ls: dict, g):
 
     if not lc.ble_cmd_cfg(c):
         ble_die('error in logger re-deploy command')
-    l_i_('[ BLE ] interact -> re_deploy OK with fallback MAT.cfg ')
+    lg.a('BLE interact -> re_deploy OK with fallback MAT.cfg ')
 
 
 def _cc26x2r_dwg_files(lc, ls) -> tuple:
@@ -98,7 +96,7 @@ def _cc26x2r_dwg_files(lc, ls) -> tuple:
         # ------------
         ble_ok('downloading file {}, {} bytes'.format(name, size))
         if not lc.ble_cmd_dwg(name):
-            l_e_('[ BLE ] error downloading {}'.format(name))
+            lg.a('BLE error when downloading {}'.format(name))
             return False, dl_ones_ok
 
         # -----------------------------------
@@ -110,14 +108,14 @@ def _cc26x2r_dwg_files(lc, ls) -> tuple:
             _t = time.perf_counter()
             data = lc.ble_cmd_dwl(size)
             _t = time.perf_counter() - _t
-            l_d_('[ BLE ] speed {:.2f} KB/s'.format((size / _t) / 1000))
+            lg.a('BLE speed {:.2f} KB/s'.format((size / _t) / 1000))
             if data:
                 with open(str(path), 'wb+') as f:
                     f.write(data)
                 break
             if i == 2:
                 return False, dl_ones_ok
-            l_d_('[ BLE ] re-trying download {}'.format(name))
+            lg.a('BLE warning: re-trying download {}'.format(name))
             time.sleep(1)
 
         # ---------------------------------
@@ -127,11 +125,11 @@ def _cc26x2r_dwg_files(lc, ls) -> tuple:
         crc = lc.ble_cmd_crc(name)
         l_crc = calculate_local_file_crc(path)
         if crc != l_crc:
-            e = '[ BLE ] error CRC local {} VS remote {} for {}'
-            l_e_(e.format(l_crc, crc, name))
+            e = 'BLE error CRC local {} VS remote {} for {}'
+            lg.a(e.format(l_crc, crc, name))
             if os.path.exists(path):
-                s = '[ BLE ] removing local file {} with bad CRC'
-                l_i_(s.format(path))
+                s = 'warning: BLE removing local file {} with bad CRC'
+                lg.a(s.format(path))
                 os.remove(path)
             return False, dl_ones_ok
 
@@ -141,7 +139,7 @@ def _cc26x2r_dwg_files(lc, ls) -> tuple:
         time.sleep(1)
         ble_ok('100% downloaded {}'.format(name))
         if not lc.ble_cmd_del(name):
-            l_e_('error deleting file {}'.format(name))
+            lg.a('BLE error when deleting file {}'.format(name))
             return False, dl_ones_ok
         dl_ones_ok[name] = size
         b_left -= size
@@ -172,7 +170,7 @@ def utils_ble_cc26x2r_interact(lc, g):
     # ----------------------------------
     if ctx.req_reset_mac_cc26x2r == lc.address:
         ctx.req_reset_mac_cc26x2r = ''
-        l_d_('[ BLE ] found flag req_reset_mac_cc26x2r, reset logger')
+        lg.a('BLE debug: found flag req_reset_mac_cc26x2r, reset logger')
         ble_li_rst(lc)
         return False
 
@@ -199,25 +197,25 @@ def utils_ble_cc26x2r_interact(lc, g):
     ble_li_rm_already_have(lc, ls)
     rv = _cc26x2r_rm_null_files(lc, ls)
     if not rv:
-        l_e_('[ BLE ] error clean-up 0-bytes files')
+        lg.a('BLE error when clean-up 0-bytes files in logger')
         return False
 
     # --------------------------------------
     # download files in cc26x2-based logger
     # --------------------------------------
-    l_i_('[ BLE ] interact -> normal download mode')
+    lg.a('BLE interact -> normal download mode')
     lc.ble_cmd_slw_ensure('off')
     if linux_is_rpi3():
         lc.ble_cmd_slw_ensure('on')
     rv, dl = _cc26x2r_dwg_files(lc, ls)
     if not rv:
         _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_SLOW, sn))
-        l_e_('[ BLE ] error download files, normal mode')
-        l_i_('[ BLE ] interact -> slow download mode')
+        lg.a('BLE error when downloading files at NORMAL mode')
+        lg.a('BLE interact -> slow download mode')
         lc.ble_cmd_slw_ensure('on')
         rv, dl = _cc26x2r_dwg_files(lc, ls)
         if not rv:
-            l_e_('[ BLE ] error download files, slow mode')
+            lg.a('BLE error when downloading files at SLOW mode')
             return False
 
     # --------------------------------
@@ -225,7 +223,83 @@ def utils_ble_cc26x2r_interact(lc, g):
     # --------------------------------
     ble_ok('almost done')
     if hook_ble_gdo_dummy_measurement:
-        l_d_('[ BLE ] hook_ble_gdo_dummy_measurement')
+        lg.a('BLE debug: hook_ble_gdo_dummy_measurement')
+    else:
+        rv = ble_li_gdo(lc)
+        if not rv:
+            lat, lon, _ = g
+            sns_notify_dissolved_oxygen_zeros(lc.address, lat, lon)
+            ble_die('error ble_li_gdo')
+
+    _cc26x2r_deploy(lc, ls, g)
+    ble_li_rws(lc, g)
+
+    # -----------------------------------
+    # PLOT only if we got some lid files
+    # -----------------------------------
+    if any(k.endswith('lid') for k in dl.keys()):
+        _u('{}/{}'.format(STATE_DDS_REQUEST_PLOT, lc.address))
+
+    return True
+
+
+def utils_ble_cc26x2r_interact_new(lc, g):
+
+    # -----------------------------
+    # battery, stop and time sync
+    # ------------------------------
+    if not lc.open():
+        ble_die('cannot connect {}'.format(lc.address))
+
+    sn = ddh_get_json_mac_dns(lc.address)
+
+    ble_li_gfv(lc)
+    ble_li_bat(lc)
+    ble_li_sws(lc, g)
+    ble_li_time_sync(lc)
+
+    # debug hook MTS
+    if hook_ble_create_dummy_file:
+        ble_li_mts(lc)
+
+    # --------------------------------------
+    # listing files in cc26x2-based logger
+    # --------------------------------------
+    ls = ble_li_ls_all(lc)
+
+    # ---------------------------------------------------------------
+    # remote clean-up for files we already have or with size 0-bytes
+    # ---------------------------------------------------------------
+    ble_li_rm_already_have(lc, ls)
+    rv = _cc26x2r_rm_null_files(lc, ls)
+    if not rv:
+        lg.a('BLE error when clean-up 0-bytes files in logger')
+        return False
+
+    # --------------------------------------
+    # download files in cc26x2-based logger
+    # --------------------------------------
+    lg.a('BLE interact -> normal download mode')
+    lc.ble_cmd_slw_ensure('off')
+    if linux_is_rpi3():
+        lc.ble_cmd_slw_ensure('on')
+    rv, dl = _cc26x2r_dwg_files(lc, ls)
+    if not rv:
+        _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_SLOW, sn))
+        lg.a('BLE error when downloading files at NORMAL mode')
+        lg.a('BLE interact -> slow download mode')
+        lc.ble_cmd_slw_ensure('on')
+        rv, dl = _cc26x2r_dwg_files(lc, ls)
+        if not rv:
+            lg.a('BLE error when downloading files at SLOW mode')
+            return False
+
+    # --------------------------------
+    # re-deploy logger cc26x2r
+    # --------------------------------
+    ble_ok('almost done')
+    if hook_ble_gdo_dummy_measurement:
+        lg.a('BLE debug: hook_ble_gdo_dummy_measurement')
     else:
         rv = ble_li_gdo(lc)
         if not rv:

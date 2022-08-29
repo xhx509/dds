@@ -3,7 +3,7 @@
 
 import os
 import time
-from services.dds_logs import DDSLogs
+from dds.logs import lg_aws as lg
 from mat.ddh_shared import send_ddh_udp_gui as _u, \
     get_dds_folder_path_dl_files, \
     get_dds_aws_has_something_to_do_flag, PID_FILE_DDS_AWS
@@ -13,9 +13,6 @@ from mat.dds_states import STATE_DDS_NOTIFY_CLOUD
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance, linux_is_rpi
 from multiprocessing import Process
 from settings import ctx
-
-
-lg = DDSLogs('aws')
 
 
 def _get_aws_bin_path():
@@ -52,7 +49,7 @@ def _s3():
         return 0
 
     _u('{}/ERR'.format(STATE_DDS_NOTIFY_CLOUD))
-    lg.a('error: cloud sync on {}'.format(_t))
+    lg.a('AWS error: cloud sync on {}'.format(_t))
     lg.a(rv.stderr)
     return 2
 
@@ -93,8 +90,12 @@ def start_dds_aws_s3_service():
 
 
 def is_dds_aws_s3_service_alive():
+    if not ctx.proc_aws:
+        lg.a('AWS error: service not even started')
+        return
+
     if not ctx.proc_aws.is_alive():
-        lg.a('warning: DDS AWS S3 service not alive')
+        lg.a('AWS warning: S3 service not alive')
 
 
 # debug

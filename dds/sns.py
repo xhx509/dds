@@ -5,12 +5,13 @@ import pathlib
 import time
 import subprocess as sp
 from botocore.exceptions import EndpointConnectionError, ClientError
-from dds.utils_ble_logs import l_e_, l_i_, l_w_
 from mat.aws.sns import get_aws_sns_client
 import json
 from mat.ddh_shared import dds_get_json_vessel_name, ddh_get_commit, \
     get_dds_folder_path_sns, dds_get_commit, get_ddh_sns_force_file_flag, ddh_get_json_mac_dns
+from mat.utils import linux_is_rpi3, linux_is_rpi4
 from settings import ctx
+from dds.logs import lg_dds as lg
 
 
 g_last_notify = time.perf_counter()
@@ -38,23 +39,23 @@ def _sns_notify(topic_arn, short_s, long_s):
         )
         # response format very complicated, only use:
         if int(response['ResponseMetadata']['HTTPStatusCode']) == 200:
-            l_i_('[ SNS ] message published OK -> {}'.format(short_s))
+            lg.a('SNS message published OK -> {}'.format(short_s))
             return 0
 
     except (ClientError, EndpointConnectionError, Exception) as e:
-        l_e_('[ SNS ] exception {}'.format(e))
+        lg.a('SNS error: exception {}'.format(e))
         return 1
 
 
 def sns_serve():
     if not ctx.sns_en:
-        l_i_('[ SNS ] not enabled')
+        lg.a('SNS not enabled')
         return
 
     flag = get_ddh_sns_force_file_flag()
     if not os.path.isfile(flag):
         return
-    l_w_('[ SNS ] detected force flag {}'.format(flag))
+    lg.a('SNS debug: detected force flag {}'.format(flag))
     os.unlink(flag)
 
     # -----------------
@@ -62,11 +63,11 @@ def sns_serve():
     # -----------------
     topic_arn = os.getenv('DDH_AWS_SNS_TOPIC_ARN')
     if topic_arn is None:
-        l_e_('[ SNS ] missing topic ARN')
+        lg.a('SNS error: missing topic ARN')
         return 1
 
     if ':' not in topic_arn:
-        l_e_('[ SNS ] topic ARN malformed')
+        lg.a('SNS error: topic ARN malformed')
         return 1
 
     # --------------------------------
@@ -77,17 +78,16 @@ def sns_serve():
     for _ in files:
         with open(_, 'r') as f:
             d = json.load(f)
-            s = 'DDH {} - {}'
-            s.format(d['reason'], d['vessel'])
-        rv = _sns_notify(topic_arn, s, json.dumps(s))
+            s = '{} - {}'.format(d['reason'], d['vessel'])
+        rv = _sns_notify(topic_arn, s, json.dumps(d))
 
         # delete SNS file
         if rv == 0:
-            l_i_('[ SNS ] served {}'.format(_))
+            lg.a('SNS served {}'.format(_))
             os.unlink(_)
 
 
-def _sns_add(reason, lat, lon):
+def _sns_w_file(reason, lat, lon):
     com_ddh = ddh_get_commit()
     com_dds = dds_get_commit()
     v = dds_get_json_vessel_name()
@@ -95,6 +95,13 @@ def _sns_add(reason, lat, lon):
     u = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     ddh_box_sn = os.getenv('DDH_BOX_SERIAL_NUMBER')
     rv_up = sp.run('uptime', shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
+
+    plat = 'dev'
+    if linux_is_rpi3():
+        plat = 'rpi3'
+    elif linux_is_rpi4():
+        plat = 'rpi4'
+
     d = {
         'reason': reason,
         'vessel': v,
@@ -104,7 +111,8 @@ def _sns_add(reason, lat, lon):
         'local_time': str(t),
         'box_sn': ddh_box_sn,
         'hw_uptime': rv_up.stdout.decode(),
-        'gps_position': '{},{}'.format(lat, lon)
+        'gps_position': '{},{}'.format(lat, lon),
+        'platform': plat
     }
     fol = str(get_dds_folder_path_sns())
     now = int(time.time())
@@ -116,7 +124,7 @@ def _sns_add(reason, lat, lon):
 def sns_notify_logger_error(mac, lat, lon):
     sn = ddh_get_json_mac_dns(mac)
     s = 'LOGGER_{}_({})_TOO_MANY_ERRORS'.format(sn, mac)
-    _sns_add(s, lat, lon)
+    _sns_w_file(s, lat, lon)
     _sns_req()
 
 
@@ -126,24 +134,24 @@ def sns_notify_ble_scan_exception(lat, lon):
     if g_last_time_notify_hw_exception + 86400 > now:
         return
     g_last_time_notify_hw_exception += 86400
-    _sns_add('BLE_HARDWARE_ERROR', lat, lon)
+    _sns_w_file('BLE_HARDWARE_ERROR', lat, lon)
     _sns_req()
 
 
 def sns_notify_dissolved_oxygen_zeros(mac, lat, lon):
     sn = ddh_get_json_mac_dns(mac)
     s = 'LOGGER_{}_({})_OXYGEN_ERROR'.format(sn, mac)
-    _sns_add(s, lat, lon)
+    _sns_w_file(s, lat, lon)
     _sns_req()
 
 
 def sns_notify_ddh_booted(lat, lon):
-    _sns_add('DDH_BOOTED', lat, lon)
+    _sns_w_file('DDH_BOOTED', lat, lon)
     _sns_req()
 
 
 def sns_notify_logger_download(mac, lat, lon):
     sn = ddh_get_json_mac_dns(mac)
     s = 'LOGGER_{}_({})_DOWNLOAD'.format(sn, mac)
-    _sns_add(s, lat, lon)
+    _sns_w_file(s, lat, lon)
     _sns_req()

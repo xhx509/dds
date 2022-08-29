@@ -2,9 +2,9 @@ import glob
 import os
 import pathlib
 import time
-from dds.utils_ble_logs import l_i_
 from mat.ddh_shared import get_dds_folder_path_macs, \
     get_dds_loggers_forget_time
+from dds.logs import lg_dds as lg
 
 
 def _ble_get_color_macs(s) -> list:
@@ -17,7 +17,7 @@ def _ble_get_color_macs(s) -> list:
     for f in glob.glob(wc):
         mac, t = f.split('@')
         if now > int(t):
-            l_i_('[ MACS ] purge {}'.format(f))
+            lg.a('MACS purge {}'.format(f))
             os.unlink(f)
         else:
             valid.append(mac)
@@ -42,9 +42,9 @@ def _add_mac(c, mac):
     mac = mac.replace(':', '-')
     f = '{}/{}@{}'.format(fol, mac, t)
     pathlib.Path(f).touch()
-    s = '[ BLE ] mac {} -> {}, value {}, now {}'
+    s = 'MACS BLE mac {} -> {}, value {}, now {}'
     now = int(time.time())
-    l_i_(s.format(mac, c, t, now))
+    lg.a(s.format(mac, c, t, now))
 
 
 def _rm_mac(c, m):
@@ -53,7 +53,7 @@ def _rm_mac(c, m):
     fol = str(get_dds_folder_path_macs() / c)
     wc = '{}/{}@*'.format(fol, m)
     for f in glob.glob(wc):
-        l_i_('[ MACS ] delete {}'.format(f))
+        lg.a('MACS delete {}'.format(f))
         os.unlink(f)
 
 

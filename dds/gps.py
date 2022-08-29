@@ -1,7 +1,6 @@
 import datetime
 import time
 import serial
-from dds.utils_ble_logs import l_d_, l_e_, l_i_
 from mat.dds_states import STATE_DDS_BLE_APP_GPS_ERROR_POSITION, STATE_DDS_NOTIFY_BOAT_NAME, STATE_DDS_NOTIFY_GPS
 from mat.gps import PORT_CTRL, PORT_DATA
 from mat.utils import linux_is_rpi, linux_set_datetime
@@ -9,6 +8,7 @@ from settings import ctx as cu
 from settings.ctx import hook_gps_dummy_measurement
 from tzlocal import get_localzone
 from mat.ddh_shared import send_ddh_udp_gui as _u, dds_get_json_vessel_name
+from dds.logs import lg_dds as lg
 
 
 g_last_time_told_vessel = time.perf_counter()
@@ -77,11 +77,11 @@ def _gps_parse_rmc_frame(data: bytes):
 def gps_connect_shield():
 
     if not cu.cell_shield_en:
-        l_i_('[ BLE ] CELL shield set False, so no GPS to configure')
+        lg.a('BLE CELL shield set False, so no GPS to configure')
         return
 
     if hook_gps_dummy_measurement:
-        l_d_('[ BLE ] dummy GPS connected, not configuring it')
+        lg.a('BLE debug: dummy GPS connected, not configuring it')
         return
 
     sp = serial.Serial(PORT_CTRL, baudrate=115200,
@@ -103,7 +103,7 @@ def gps_measure():
     # hooks
     if cu.hook_gps_error_measurement_forced:
         _u(STATE_DDS_BLE_APP_GPS_ERROR_POSITION)
-        l_d_('[ GPS ] hook_gps_error_measurement_forced')
+        lg.a('[ GPS ] hook_gps_error_measurement_forced')
         return
 
     if cu.hook_gps_dummy_measurement:
@@ -143,7 +143,7 @@ def gps_clock_sync_if_so(dt_gps_utc):
     diff_secs = abs((dt_gps_utc - utc_now).total_seconds())
     if diff_secs < 60:
         return
-    l_d_('[ GPS ] diff_secs = {}'.format(diff_secs))
+    lg.a('[ GPS ] diff_secs = {}'.format(diff_secs))
 
     # use GPS time to sync local clock
     assert type(dt_gps_utc) is datetime.datetime
@@ -152,7 +152,7 @@ def gps_clock_sync_if_so(dt_gps_utc):
     dt_my = dt_gps_utc.replace(tzinfo=z_utc).astimezone(tz=z_my)
     t = str(dt_my)[:-6]
     if not linux_is_rpi():
-        l_e_('[ GPS ] not setting date on non-rpi')
+        lg.a('[ GPS ] not setting date on non-rpi')
         return
     return linux_set_datetime(t)
 
