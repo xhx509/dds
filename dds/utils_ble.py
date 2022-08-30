@@ -6,7 +6,7 @@ import time
 from dds.macs import macs_black, macs_orange, rm_mac_black, rm_mac_orange, add_mac_orange, add_mac_black, \
     is_mac_in_black, is_mac_in_orange
 from dds.sns import sns_notify_logger_error, sns_notify_ble_scan_exception
-from dds.utils_ble_cc26x2r import utils_ble_cc26x2r_interact, utils_ble_cc26x2r_interact_new
+from dds.utils_ble_cc26x2r import utils_ble_cc26x2r_interact
 from dds.utils_ble_lowell import AppBLEException
 from dds.utils_ble_moana import utils_ble_moana_interact
 from dds.utils_ble_rn4020 import utils_ble_rn4020_interact
@@ -51,7 +51,7 @@ def _print_scan_banner():
 
 def ble_debug_hooks_at_boot():
     if hook_ble_purge_black_macs_on_boot:
-        lg.a('BLE debug: hook_purge_black_macs_on_boot')
+        lg.a('BLE debug: HOOK_PURGE_BLACK_MACS_ON_BOOT')
         p = pathlib.Path(get_dds_folder_path_macs_black())
         shutil.rmtree(str(p), ignore_errors=True)
         macs_color_create_folder()
@@ -112,7 +112,7 @@ def _ble_interact_w_logger(mac, info: str, h, g):
 
     # debug: delete THIS logger's existing files
     if hook_ble_purge_this_mac_dl_files_folder:
-        lg.a('BLE debug: hook_purge_this_mac_dl_files_folder {}'.format(mac))
+        lg.a('BLE debug: HOOK_PURGE_THIS_MAC_DL_FILES_FOLDER {}'.format(mac))
         p = pathlib.Path(get_dl_folder_path_from_mac(mac))
         shutil.rmtree(str(p), ignore_errors=True)
 
@@ -134,13 +134,9 @@ def _ble_interact_w_logger(mac, info: str, h, g):
             lc = LoggerControllerMoana(mac)
             utils_ble_moana_interact(lc)
 
-        elif utils_logger_is_cc26x2r(mac, info):
-            lc = LoggerControllerCC26X2R(mac, h, what=info)
-            utils_ble_cc26x2r_interact(lc, g)
-
         elif utils_logger_is_cc26x2r_new(mac, info):
-            lc = LoggerControllerCC26X2R(mac, h, what='mod')
-            utils_ble_cc26x2r_interact_new(lc, g)
+            lc = LoggerControllerCC26X2R(mac, h, what='DO-4')
+            utils_ble_cc26x2r_interact(lc, g)
 
         else:
             e = 'BLE error: unknown logger, mac {} info {}'
@@ -174,13 +170,16 @@ def _ble_interact_w_logger(mac, info: str, h, g):
         # track logger errors
         _add_logger_errors_to_sns_if_any(rv, mac, lat, lon)
 
+        # todo > maybe remove this
         # hack for loggers on their way to fail 5 times
-        if rv == 0:
-            return
-        v = g_logger_errors[mac] + 1
-        if v == 2 and utils_logger_is_cc26x2r(mac, info):
-            ctx.req_reset_mac_cc26x2r = mac
-            lg.a('BLE debug: set flag req_reset_mac_cc26x2r')
+        if rv:
+            v = g_logger_errors[mac] + 1
+            if v == 2 and utils_logger_is_cc26x2r(mac, info):
+                ctx.req_reset_mac_cc26x2r = mac
+                lg.a('BLE debug: set flag req_reset_mac_cc26x2r')
+        else:
+            g_logger_errors[mac] = 0
+        return rv
 
 
 def _add_logger_errors_to_sns_if_any(rv, mac, lat, lon):
@@ -227,9 +226,10 @@ def ble_loop(macs_mon, _lat, _lon, _dt, _h, _h_desc):
         if is_mac_in_orange(mac, o):
             continue
 
-
+        # MAC passed all filters, work with it
         g = (_lat, _lon, _dt)
         ble_flag_dl()
-        _ble_interact_w_logger(mac, model, _h, g)
+        rv = _ble_interact_w_logger(mac, model, _h, g)
         ble_un_flag_dl()
-        _ble_set_aws_flag()
+        if rv == 0:
+            _ble_set_aws_flag()

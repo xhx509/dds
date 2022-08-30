@@ -42,9 +42,9 @@ def _add_mac(c, mac):
     mac = mac.replace(':', '-')
     f = '{}/{}@{}'.format(fol, mac, t)
     pathlib.Path(f).touch()
-    s = 'MACS BLE mac {} -> {}, value {}, now {}'
+    s = 'BLE {}\'ed mac {}, value {}, now {}'
     now = int(time.time())
-    lg.a(s.format(mac, c, t, now))
+    lg.a(s.format(c, mac, t, now))
 
 
 def _rm_mac(c, m):

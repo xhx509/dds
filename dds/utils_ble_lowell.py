@@ -76,10 +76,14 @@ def ble_li_rws(lc, g):  # does not exist on RN4020
     lat = '{:+.6f}'.format(float(lat))
     lon = '{:+.6f}'.format(float(lon))
     s = '{} {}'.format(lat, lon)
-    rv = lc.ble_cmd_rws(s)
-    if not rv:
-        ble_die('error ble_li_rws')
-    ble_ok('RWS OK: lat {} lon {}'.format(lat, lon))
+
+    for i in range(3):
+        rv = lc.ble_cmd_rws(s)
+        if rv:
+            ble_ok('RWS coordinates {}'.format(s))
+            return
+        time.sleep(2)
+    ble_die('ble_li_rws')
 
 
 def ble_li_run(lc):
@@ -175,10 +179,14 @@ def ble_li_sws(lc, g):  # STOP with STRING
     lat = '{:+.6f}'.format(float(lat))
     lon = '{:+.6f}'.format(float(lon))
     s = '{} {}'.format(lat, lon)
-    rv = lc.ble_cmd_sws(s)
-    if not rv:
-        ble_die('SWS')
-    ble_ok('SWS coordinates {}'.format(s))
+
+    for i in range(3):
+        rv = lc.ble_cmd_sws(s)
+        if rv:
+            ble_ok('SWS coordinates {}'.format(s))
+            return
+        time.sleep(2)
+    ble_die('ble_li_sws')
 
 
 def ble_li_time_sync(lc):
