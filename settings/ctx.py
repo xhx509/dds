@@ -19,13 +19,8 @@ plt_units_depth = None
 span_dict = None
 
 
-# pusher
-push_en = False
-
-
 # AWS / SNS: enabled or not
 aws_en = True
-aws_do = True
 sns_en = True
 
 
@@ -50,9 +45,9 @@ hook_ble_purge_this_mac_dl_files_folder = False
 hook_ble_create_dummy_file = False
 
 
-# contains process handlers
-proc_aws = None
-proc_cnv = None
+# 0 to force
+ts_last_cnv = 0
+ts_last_aws = 0
 
 
 # to re-deploy
@@ -97,8 +92,8 @@ def sns_create_folder():
 def macs_color_show_at_boot():
     b = macs_black()
     o = macs_orange()
-    lg.a('BLE boot macs_black  = {}'.format(b))
-    lg.a('BLE boot macs_orange = {}'.format(o))
+    lg.a('boot macs_black  = {}'.format(b))
+    lg.a('boot macs_orange = {}'.format(o))
 
 
 def op_conditions_met(knots) -> bool:

@@ -77,11 +77,11 @@ def _gps_parse_rmc_frame(data: bytes):
 def gps_connect_shield():
 
     if not cu.cell_shield_en:
-        lg.a('BLE CELL shield set False, so no GPS to configure')
+        lg.a('CELL shield set False, so no GPS to configure')
         return
 
     if hook_gps_dummy_measurement:
-        lg.a('BLE debug: dummy GPS connected, not configuring it')
+        lg.a('debug: dummy GPS connected, not configuring it')
         return
 
     sp = serial.Serial(PORT_CTRL, baudrate=115200,

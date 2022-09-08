@@ -1,15 +1,15 @@
+import os
 import pathlib
 import shutil
 import traceback
 import bluepy.btle as ble
 import time
+
+from pandas.io import json
+
 from dds.macs import macs_black, macs_orange, rm_mac_black, rm_mac_orange, add_mac_orange, add_mac_black, \
     is_mac_in_black, is_mac_in_orange
 from dds.sns import sns_notify_logger_error, sns_notify_ble_scan_exception
-from dds.utils_ble_cc26x2r import utils_ble_cc26x2r_interact
-from dds.utils_ble_lowell import AppBLEException
-from dds.utils_ble_moana import utils_ble_moana_interact
-from dds.utils_ble_rn4020 import utils_ble_rn4020_interact
 from mat.ble.bluepy.bluepy_utils import ble_scan_bluepy
 from mat.ble.bluepy.cc26x2r_logger_controller import LoggerControllerCC26X2R
 from mat.ble.bluepy.cc26x2r_utils import utils_logger_is_cc26x2r, utils_logger_is_cc26x2r_new
@@ -36,7 +36,7 @@ g_ts_scan_banner = 0
 def ble_show_monitored_macs():
     mm = ddh_get_macs_from_json_file()
     for i in mm:
-        lg.a('BLE debug: monitored mac {}'.format(i))
+        lg.a('debug: monitored mac {}'.format(i))
 
 
 def _print_scan_banner():
@@ -46,12 +46,41 @@ def _print_scan_banner():
     _expired_banner = now > g_ts_scan_banner + 300
     if _first_banner or _expired_banner:
         g_ts_scan_banner = now + 300
-        lg.a('BLE scanning ...')
+        lg.a('scanning ...')
+
+
+def check_local_file_exists(file_name, size, fol):
+    path = os.path.join(fol, file_name)
+    if os.path.isfile(path):
+        return os.path.getsize(path) == size
+    return False
+
+
+def utils_ble_build_files_to_download_as_dict(lc, ls) -> dict:
+    ff, fol = {}, get_dl_folder_path_from_mac(lc.address)
+    for name, size in ls.items():
+        if name.endswith('cfg'):
+            continue
+        if size and not check_local_file_exists(name, size, fol):
+            ff[name] = size
+    print('{} has {} files for us'.format(lc.address, len(ff)))
+    return ff
+
+
+def utils_ble_set_last_haul(fol, s):
+    # careful 's' may be full path or only last part
+    s = os.path.basename(os.path.normpath(s))
+    path = str(fol) + '/.last_haul.json'
+    d = {
+        'file': s
+    }
+    with open(path, 'w') as f:
+        json.dump(d, f)
 
 
 def ble_debug_hooks_at_boot():
     if hook_ble_purge_black_macs_on_boot:
-        lg.a('BLE debug: HOOK_PURGE_BLACK_MACS_ON_BOOT')
+        lg.a('debug: HOOK_PURGE_BLACK_MACS_ON_BOOT')
         p = pathlib.Path(get_dds_folder_path_macs_black())
         shutil.rmtree(str(p), ignore_errors=True)
         macs_color_create_folder()
@@ -60,7 +89,7 @@ def ble_debug_hooks_at_boot():
 def _ble_set_aws_flag():
     flag = get_dds_aws_has_something_to_do_flag()
     pathlib.Path(flag).touch()
-    lg.a('BLE debug: flag ddh_aws_has_something_to_do set')
+    lg.a('debug: flag ddh_aws_has_something_to_do set')
 
 
 def _ble_scan(h) -> dict:
@@ -94,7 +123,7 @@ def _ble_scan(h) -> dict:
 
     except (ble.BTLEException, Exception) as e:
         _u(STATE_DDS_BLE_HARDWARE_ERROR)
-        lg.a('BLE error: exception -> {}'.format(e))
+        lg.a('error: exception -> {}'.format(e))
         li = {}
 
     finally:
@@ -104,7 +133,7 @@ def _ble_scan(h) -> dict:
 def _ble_interact_w_logger(mac, info: str, h, g):
 
     # debug
-    # l_d_('BLE forcing query of hardcoded mac')
+    # l_d_('forcing query of hardcoded mac')
     # hc_mac = '60:77:71:22:c8:6f'
     # hc_info = 'DO-2'
     # mac = hc_mac
@@ -112,7 +141,7 @@ def _ble_interact_w_logger(mac, info: str, h, g):
 
     # debug: delete THIS logger's existing files
     if hook_ble_purge_this_mac_dl_files_folder:
-        lg.a('BLE debug: HOOK_PURGE_THIS_MAC_DL_FILES_FOLDER {}'.format(mac))
+        lg.a('debug: HOOK_PURGE_THIS_MAC_DL_FILES_FOLDER {}'.format(mac))
         p = pathlib.Path(get_dl_folder_path_from_mac(mac))
         shutil.rmtree(str(p), ignore_errors=True)
 
@@ -122,33 +151,37 @@ def _ble_interact_w_logger(mac, info: str, h, g):
     sn = ddh_get_json_mac_dns(mac)
     _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD, sn))
     rv = 0
-    s = 'BLE querying sensor {} / mac {}'
+    s = 'querying sensor {} / mac {}'
     lg.a(s.format(sn, mac))
 
     try:
         if utils_logger_is_rn4020(mac, info):
-            lc = LoggerControllerRN4020(mac, h)
-            utils_ble_rn4020_interact(lc, g)
+            print('----> rn4020')
+            # lc = LoggerControllerRN4020(mac, h)
+            # utils_ble_rn4020_interact(lc, g)
 
         elif utils_logger_is_moana(mac, info):
-            lc = LoggerControllerMoana(mac)
-            utils_ble_moana_interact(lc)
+            print('----> moana')
+            # todo > copy this from moana in DDH
+            # lc = LoggerControllerMoana(mac)
+            # utils_ble_moana_interact(lc)
 
         elif utils_logger_is_cc26x2r_new(mac, info):
-            lc = LoggerControllerCC26X2R(mac, h, what='DO-4')
-            utils_ble_cc26x2r_interact(lc, g)
+            print('-----> doX')
+            # lc = LoggerControllerCC26X2R(mac, h, what='DO-4')
+            # utils_ble_cc26x2r_interact(lc, g)
 
         else:
-            e = 'BLE error: unknown logger, mac {} info {}'
+            e = 'error: unknown logger, mac {} info {}'
             lg.a(e.format(mac, info))
 
-    except AppBLEException as ex:
-        # --------------------------
-        # ble_die() -> reaches here
-        # --------------------------
-        e = '[ BLE] error: app exception {} -> {}'
-        lg.a(e.format(ex, traceback.format_exc()))
-        rv = 1
+    # except AppBLEException as ex:
+    #     --------------------------
+    #     ble_die() -> reaches here
+    #     --------------------------
+        # e = '[ BLE] error: app exception {} -> {}'
+        # lg.a(e.format(ex, traceback.format_exc()))
+        # rv = 1
 
     except (ble.BTLEException, Exception) as ex:
         e = '[ BLE] error: wireless exception {} -> {}'
@@ -176,7 +209,7 @@ def _ble_interact_w_logger(mac, info: str, h, g):
             v = g_logger_errors[mac] + 1
             if v == 2 and utils_logger_is_cc26x2r(mac, info):
                 ctx.req_reset_mac_cc26x2r = mac
-                lg.a('BLE debug: set flag req_reset_mac_cc26x2r')
+                lg.a('debug: set flag req_reset_mac_cc26x2r')
         else:
             g_logger_errors[mac] = 0
         return rv
