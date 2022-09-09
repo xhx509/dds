@@ -1,21 +1,22 @@
-# todo > recall this cannot go on public repos because of bleak_moana.py
+# todo > recall this cannot go on public repos because of ble_moana.py
 
 import socket
 import json
 import asyncio
-import logging
 import os
 import re
 import struct
 import time
-import traceback
 from bleak import BleakScanner, BleakClient, BleakError
 from bleak.backends.scanner import AdvertisementData
 from bleak.backends.device import BLEDevice
 from datetime import datetime
 from enum import Enum
+from dds.logs import lg_dds as lg
+from mat.ble.bluepy.moana_logger_controller import utils_logger_is_moana
 from mat.ddh_shared import send_ddh_udp_gui as _u
 from mat.dds_states import STATE_DDS_BLE_DOWNLOAD
+
 
 NAME_FILTER = 'ZT-MOANA-0051'
 VSP_RX_CHAR_UUID = '569a2001-b87f-490c-92cb-11ba5ea5167c'
@@ -362,41 +363,10 @@ class MoanaBle:
         return False
 
 
-# def bleak_moana():
-#     try:
-#         moana_ble = MoanaBle()
-#         rv = asyncio.run(moana_ble.download_recipe())
-#         print('bye, bye')
-#         return rv
-#     except Exception as e:
-#         logging.error(traceback.format_exc())
+async def ble_interact_moana(mac, info):
+    if not utils_logger_is_moana(mac, info):
+        return
 
-
-async def bleak_moana():
-    try:
-        moana_ble = MoanaBle()
-        rv = await moana_ble.download_recipe()
-        print('bye, bye', rv)
-        return rv
-    except Exception as e:
-        logging.error(traceback.format_exc())
-
-
-async def bleak_moana_main():
-    return await bleak_moana()
-
-# todo >test icons
-# todo > test several exes in a row async
-
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    coroutine = bleak_moana_main()
-    loop.run_until_complete(coroutine)
-    time.sleep(1)
-    print('puta')
-    coroutine = bleak_moana_main()
-    loop.run_until_complete(coroutine)
-
-
-
-# tests, several runs in a row
+    lg.a('interacting with Moana logger')
+    lc = MoanaBle()
+    await lc.download_recipe()

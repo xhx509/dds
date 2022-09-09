@@ -7,7 +7,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="lowell-mat" />
-    <orderEntry type="module" module-name="ddh" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="format" value="PLAIN" />

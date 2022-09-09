@@ -1,3 +1,4 @@
+import asyncio
 import glob
 import os
 import pathlib
@@ -72,6 +73,9 @@ mat_cfg_do2_fallback = {
         "ETM": "2030-11-12 12:14:20",
         "LED": 1
 }
+
+
+ael = asyncio.get_event_loop()
 
 
 def macs_create_color_folders():
@@ -177,3 +181,7 @@ def ble_get_antenna_type():
 
     # fallback
     return 0, 'internal'
+
+
+class BLEAppException(Exception):
+    pass
