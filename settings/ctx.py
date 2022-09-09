@@ -27,7 +27,6 @@ sns_en = True
 # BLE: enabled or not + switch capability
 ble_en = True
 sw_ble_en = True
-req_reset_mac_cc26x2r = ''
 
 
 # cell shield: present or not
@@ -75,7 +74,7 @@ mat_cfg_do2_fallback = {
 }
 
 
-def macs_color_create_folder():
+def macs_create_color_folders():
     r = 'macs'
     os.makedirs(r, exist_ok=True)
     r = 'macs/black'
@@ -178,19 +177,3 @@ def ble_get_antenna_type():
 
     # fallback
     return 0, 'internal'
-
-
-def ble_flag_dl():
-    flag = get_dds_is_ble_downloading_flag()
-    pathlib.Path(flag).touch()
-
-
-def ble_un_flag_dl():
-    flag = get_dds_is_ble_downloading_flag()
-    if os.path.isfile(flag):
-        os.unlink(flag)
-
-
-def ble_un_flag_dl_at_boot():
-    return ble_un_flag_dl()
-
