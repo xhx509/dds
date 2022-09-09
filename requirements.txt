@@ -1,0 +1,6 @@
+gitpython
+pandas
+git+https://github.com/lowellinstruments/bluepy.git
+bleak
+pyyaml
+tzlocal

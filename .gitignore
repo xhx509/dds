@@ -13,6 +13,7 @@ dl_files/*
 *.sns
 macs/
 *.pyc
+!requirements.txt
 
 
 # Byte-compiled / optimized / DLL files
