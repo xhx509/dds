@@ -363,7 +363,7 @@ class MoanaBle:
         return False
 
 
-async def ble_interact_moana(mac, info):
+async def ble_interact_moana(mac, info, g):
     if not utils_logger_is_moana(mac, info):
         return
 

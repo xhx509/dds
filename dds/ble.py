@@ -1,11 +1,11 @@
+import asyncio
 import pathlib
 import shutil
+import socket
 import traceback
 import bluepy.btle as ble
 import time
-from bleak import BleakScanner
-from dds.ble_cc26x2 import ble_interact_cc26x2
-from dds.ble_rn4020 import ble_interact_rn4020
+from bleak import BleakScanner, BleakError
 from dds.ble_moana import ble_interact_moana
 from dds.macs import macs_black, macs_orange, rm_mac_black, rm_mac_orange, add_mac_orange, add_mac_black, \
     is_mac_in_black, is_mac_in_orange
@@ -16,15 +16,23 @@ from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, \
     get_dds_aws_has_something_to_do_flag, \
     get_dds_folder_path_macs_black, ddh_get_macs_from_json_file
 from mat.dds_states import *
-from settings import ctx
+from dds.logs import lg_dds as lg
 from settings.ctx import hook_ble_purge_this_mac_dl_files_folder, \
     hook_ble_purge_black_macs_on_boot, macs_create_color_folders
-from dds.logs import lg_dds as lg
 
 
 TIME_IGNORE_TOO_ERROR = 600
 TIME_IGNORE_ONE_ERROR = 30
 g_logger_errors = {}
+
+
+def ble_progress_dl(v, size, ip, port):
+    _ = int(v) / int(size) * 100
+    _ = _ if _ < 100 else 100
+    _sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    print('{} %'.format(int(_)))
+    _ = '{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_PROGRESS, _)
+    _sk.sendto(str(_).encode(), (ip, port))
 
 
 def ble_show_monitored_macs():
@@ -112,6 +120,7 @@ async def _ble_scan(h) -> tuple:
 
 
 async def ble_scan(_lat, _lon, _dt, _h, _h_desc):
+    """ scan, generic, just to find macs around """
 
     _u('{}/{}'.format(STATE_DDS_BLE_ANTENNA, _h_desc))
     rv, det = await _ble_scan(0)
@@ -120,6 +129,20 @@ async def ble_scan(_lat, _lon, _dt, _h, _h_desc):
         sns_notify_ble_scan_exception(_lat, _lon)
         return {}
     return det
+
+
+async def ble_scan_by_mac(mac, till=5, ad='hci0'):
+    """ scan_by_mac, particular, generates device 'd' to connect """
+
+    try:
+        disc_result = await BleakScanner.discover(adapter=ad)
+        macs_around = [i.address for i in disc_result]
+        if mac not in macs_around:
+            return
+        _d = await BleakScanner.find_device_by_address(mac, timeout=till)
+        return _d
+    except (asyncio.TimeoutError, BleakError, OSError):
+        lg.a('hardware error during scan')
 
 
 async def _ble_interact_w_logger(mac, info: str, h, g):
@@ -145,14 +168,13 @@ async def _ble_interact_w_logger(mac, info: str, h, g):
     lg.a('querying sensor {} / mac {}'.format(sn, mac))
 
     try:
-        # await ble_interact_rn4020(mac, info)
-        # await ble_interact_cc26x2(mac, info)
-        await ble_interact_moana(mac, info)
+        # await ble_interact_rn4020(mac, info, g)
+        # await ble_interact_cc26x2(mac, info, g)
+        await ble_interact_moana(mac, info, g)
         _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_OK, sn))
         s = 'history/add&{}&ok&{}&{}&{}'
 
-    # todo > change this for bleak exceptions
-    except (ble.BTLEException, Exception) as ex:
+    except (Exception, ) as ex:
         e = 'error: exception {} -> {}'
         lg.a(e.format(ex, traceback.format_exc()))
         _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_ERROR, sn))
@@ -191,3 +213,27 @@ async def ble_interact_w_logger(macs_det, macs_mon, _lat, _lon, _dt, _h, _h_desc
         rv = await _ble_interact_w_logger(mac, model, _h, g)
         if rv == 0:
             _ble_set_aws_flag()
+
+
+def build_cmd(*args):
+
+    # phone commands use aggregated, a.k.a. transparent, mode
+    # they do NOT follow LI proprietary format (DWG NNABCD...)
+    tp_mode = len(str(args[0]).split(' ')) > 1
+    cmd = str(args[0])
+    if tp_mode:
+        to_send = cmd
+    else:
+        # build LI proprietary command format
+        cmd = str(args[0])
+        arg = str(args[1]) if len(args) == 2 else ''
+        n = '{:02x}'.format(len(arg)) if arg else ''
+        to_send = cmd + ' ' + n + arg
+    to_send += chr(13)
+
+    # debug
+    # print(to_send.encode())
+
+    # know command tag, ex: 'STP'
+    tag = cmd[:3]
+    return to_send, tag

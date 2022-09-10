@@ -1,6 +1,7 @@
 import os
 import time
 from dds.logs import lg_dds as lg
+from mat.crc import calculate_local_file_crc
 from mat.ddh_shared import dds_get_json_vessel_name, get_dds_folder_path_dl_files, get_dds_folder_path_logs
 from pathlib import Path
 import datetime
@@ -62,3 +63,12 @@ def print_ble_scan_banner():
     if _first_banner or _expired_banner:
         g_ts_scan_banner = now + 300
         lg.a('scanning ...')
+
+
+def crc_local_vs_remote(path, remote_crc):
+    """ calculates local file name CRC and compares to parameter """
+
+    # remote_crc: logger, crc: local
+    crc = calculate_local_file_crc(path)
+    crc = crc.lower()
+    return crc == remote_crc, crc
