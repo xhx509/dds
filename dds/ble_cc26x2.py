@@ -4,6 +4,8 @@ import os
 import time
 from bleak import BleakScanner, BleakClient, BleakError
 from datetime import datetime, timezone, timedelta
+
+from dds.ble_scan import ble_scan_by_mac
 from dds.logs import lg_dds as lg
 from dds.utils import crc_local_vs_remote, ble_progress_dl, build_cmd
 from mat.ble.bluepy.cc26x2r_utils import utils_logger_is_cc26x2r_new

@@ -2,13 +2,14 @@
 import asyncio
 import time
 from dds.aws import aws_serve
+from dds.ble_scan import ble_scan
 from dds.cnv import cnv_serve
 from dds.gps import gps_wait_for_it_at_boot, \
     gps_measure, gps_connect_shield, gps_clock_sync_if_so, \
     gps_tell_vessel_name
 from dds.sns import sns_serve, sns_notify_ddh_booted
 from dds.utils import dds_log_core_start_at_boot, dds_log_tracking_start_at_boot, dds_log_tracking_add
-from dds.ble import ble_apply_debug_hooks_at_boot, ble_show_monitored_macs, ble_scan, ble_interact_w_logger
+from dds.ble import ble_apply_debug_hooks_at_boot, ble_show_monitored_macs, ble_interact_w_logger
 from mat.dds_states import STATE_DDS_BLE_APP_BOOT
 from mat.utils import linux_app_write_pid, ensure_we_run_only_one_instance
 from mat.ddh_shared import send_ddh_udp_gui as _u, \

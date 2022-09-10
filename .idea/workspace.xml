@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="97673b0c-cb69-4042-9f58-1715bc626e53" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/dds/ble_scan.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ddh/ddh/gui/main_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ddh/ddh/gui/main_gui.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ddh/ddh/gui/utils_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ddh/ddh/utils_gui.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ddh/ddh/utils_plt.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ddh/ddh/utils_plt.py" afterDir="false" />
@@ -14,7 +15,6 @@
       <change beforePath="$PROJECT_DIR$/dds/ble_cc26x2.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble_cc26x2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dds/ble_moana.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble_moana.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dds/cnv.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/cnv.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dds/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/settings/ctx.py" beforeDir="false" afterPath="$PROJECT_DIR$/settings/ctx.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/cc26x2r_logger_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/cc26x2r_logger_controller.py" afterDir="false" />
