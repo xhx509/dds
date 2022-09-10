@@ -8,12 +8,6 @@
       <change beforePath="$PROJECT_DIR$/../ddh/dev/requirements_dev.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../ddh/dev/requirements_dev.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ddh/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../ddh/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dds/ble.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dds/ble_cc26x2.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble_cc26x2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dds/ble_moana.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble_moana.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dds/ble_scan.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble_scan.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings/ddh.json" beforeDir="false" afterPath="$PROJECT_DIR$/settings/ddh.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/cc26x2r_logger_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/cc26x2r_logger_controller.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/cc26x2r_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/cc26x2r_utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../lowell-mat/mat/ddh_shared.py" beforeDir="false" afterPath="$PROJECT_DIR$/../lowell-mat/mat/ddh_shared.py" afterDir="false" />
@@ -34,7 +28,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../ddh" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -162,5 +156,16 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/dds/ble_cc26x2.py</url>
+          <line>182</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
