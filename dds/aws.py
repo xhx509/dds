@@ -2,13 +2,12 @@
 
 import os
 import time
-
 from dds.logs import lg_aws as lg
 from mat.ddh_shared import send_ddh_udp_gui as _u, \
     get_dds_folder_path_dl_files
 import subprocess as sp
 import datetime
-from mat.dds_states import STATE_DDS_NOTIFY_CLOUD
+from mat.dds_states import *
 from mat.utils import linux_is_rpi
 from settings import ctx
 
@@ -37,11 +36,11 @@ def aws_serve():
     _n = os.getenv('DDH_AWS_NAME')
     _bin = _get_aws_bin_path()
 
-    _u('{}/busy'.format(STATE_DDS_NOTIFY_CLOUD))
+    _u(STATE_DDS_NOTIFY_CLOUD_BUSY)
 
     if _k is None or _s is None or _n is None:
         lg.a('missing credentials')
-        _u('{}/log-in'.format(STATE_DDS_NOTIFY_CLOUD))
+        _u(STATE_DDS_NOTIFY_CLOUD_LOGIN)
         return 1
     _n = 'bkt-' + _n
 
@@ -51,12 +50,12 @@ def aws_serve():
     rv = sp.run(c, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
     _t = datetime.datetime.now()
     if rv.returncode == 0:
-        _u('{}/OK'.format(STATE_DDS_NOTIFY_CLOUD))
+        _u(STATE_DDS_NOTIFY_CLOUD_OK)
         lg.a('good cloud sync on {}'.format(_t))
         lg.a(rv.stdout)
         return 0
 
-    _u('{}/ERR'.format(STATE_DDS_NOTIFY_CLOUD))
+    _u(STATE_DDS_NOTIFY_CLOUD_ERR)
     lg.a('AWS error: cloud sync on {}'.format(_t))
     lg.a(rv.stderr)
     return 2

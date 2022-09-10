@@ -4,13 +4,11 @@ import os
 import time
 from bleak import BleakScanner, BleakClient, BleakError
 from datetime import datetime, timezone, timedelta
-from dds.ble import build_cmd, ble_progress_dl, ble_scan_by_mac
 from dds.logs import lg_dds as lg
-from dds.utils import crc_local_vs_remote
+from dds.utils import crc_local_vs_remote, ble_progress_dl, build_cmd
 from mat.ble.bluepy.cc26x2r_utils import utils_logger_is_cc26x2r_new
-from mat.ddh_shared import send_ddh_udp_gui as _u, DDH_GUI_UDP_PORT, get_dl_folder_path_from_mac, \
+from mat.ddh_shared import DDH_GUI_UDP_PORT, get_dl_folder_path_from_mac, \
     create_folder_logger_by_mac
-from mat.dds_states import STATE_DDS_BLE_DOWNLOAD
 from mat.logger_controller import SET_TIME_CMD, DEL_FILE_CMD, SWS_CMD, RWS_CMD
 from mat.logger_controller_ble import DWG_FILE_CMD, CRC_CMD
 from mat.utils import dir_ans_to_dict
@@ -215,8 +213,6 @@ class BleCC26X2:
         if not rv:
             lg.a('failed connecting {}'.format(mac))
 
-        _u(STATE_DDS_BLE_DOWNLOAD)
-
         if g:
             rv = await self.cmd_sws(g)
             _rae(rv, 'sws')
@@ -229,8 +225,8 @@ class BleCC26X2:
 
         # rv = await self.cmd_gfv()
         # _rae(rv, 'gfv')
-        # rv = await self.cmd_mts()
-        # _rae(rv, 'mts')
+        rv = await self.cmd_mts()
+        _rae(rv, 'mts')
 
         # rv = await self.cmd_gtm()
         # _rae(rv, 'gtm')

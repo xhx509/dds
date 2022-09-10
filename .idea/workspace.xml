@@ -2,15 +2,24 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="97673b0c-cb69-4042-9f58-1715bc626e53" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../ddh/ddh/gui/main_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ddh/ddh/gui/main_gui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ddh/ddh/gui/utils_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ddh/ddh/utils_gui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ddh/ddh/utils_plt.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ddh/ddh/utils_plt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ddh/dev/requirements_dev.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../ddh/dev/requirements_dev.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ddh/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../ddh/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dds/aws.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/aws.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dds/ble.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dds/ble_cc26x2.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble_cc26x2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dds/ble_moana.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble_moana.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dds/cnv.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/cnv.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dds/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dl_files/60-77-71-22-c8-6f/.last_haul.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dl_files/60-77-71-22-ca-6d/.last_haul.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings/ctx.py" beforeDir="false" afterPath="$PROJECT_DIR$/settings/ctx.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/cc26x2r_logger_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/cc26x2r_logger_controller.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/cc26x2r_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/cc26x2r_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lowell-mat/mat/dds_states.py" beforeDir="false" afterPath="$PROJECT_DIR$/../lowell-mat/mat/dds_states.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../lowell-mat/mat/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../lowell-mat/mat/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../lowell-mat/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../lowell-mat/requirements.txt" afterDir="false" />
     </list>
@@ -43,16 +52,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "/home/kaz/PycharmProjects/ddh",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyDependenciesConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/kaz/PycharmProjects/ddh&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyDependenciesConfigurable&quot;
   }
-}]]></component>
-  <component name="RunManager" selected="Python.ble_cc26x2">
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/../ddh/ddh" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.ddh">
     <configuration name="ble_cc26x2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="dds" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -74,7 +88,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="ddh" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="ddh" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../ddh" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../ddh/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="dds" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="dds" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -95,10 +130,16 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Python.ble_cc26x2" />
+      <item itemvalue="Python.dds" />
+      <item itemvalue="Python.ddh" />
+    </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.dds" />
+        <item itemvalue="Python.ddh" />
         <item itemvalue="Python.ble_cc26x2" />
-        <item itemvalue="Python.main" />
       </list>
     </recent_temporary>
   </component>

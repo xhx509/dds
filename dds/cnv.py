@@ -1,9 +1,8 @@
 import time
-
 from dds.logs import lg_cnv as lg
 from mat.ddh_shared import get_dds_folder_path_dl_files, ddh_convert_lid_to_csv
 from mat.ddh_shared import send_ddh_udp_gui as _u
-from mat.dds_states import STATE_DDS_NOTIFY_CONVERSION_RESULT as _R
+from mat.dds_states import *
 from settings import ctx
 
 
@@ -38,7 +37,7 @@ def cnv_serve():
     if not rv:
         e += 'P'
     if e:
-        _u('{}/{}'.format(_R, e))
+        _u('{}/{}'.format(STATE_DDS_NOTIFY_CONVERSION_ERR, e))
     else:
-        _u('{}/OK'.format(_R))
+        _u('{}/OK'.format(STATE_DDS_NOTIFY_CONVERSION_OK))
     lg.a('finished conversion round')

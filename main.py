@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import asyncio
 import time
-
 from dds.aws import aws_serve
 from dds.cnv import cnv_serve
 from dds.gps import gps_wait_for_it_at_boot, \
@@ -67,3 +66,5 @@ if __name__ == '__main__':
         # sns_serve()
         # cnv_serve()
         # aws_serve()
+
+        # todo > check net service

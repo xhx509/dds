@@ -13,9 +13,8 @@ from bleak.backends.device import BLEDevice
 from datetime import datetime
 from enum import Enum
 from dds.logs import lg_dds as lg
+from dds.utils import ble_progress_dl
 from mat.ble.bluepy.moana_logger_controller import utils_logger_is_moana
-from mat.ddh_shared import send_ddh_udp_gui as _u
-from mat.dds_states import STATE_DDS_BLE_DOWNLOAD
 
 
 NAME_FILTER = 'ZT-MOANA-0051'
@@ -210,12 +209,7 @@ class MoanaBle:
         data = await self.packet_read_binary('D')
         if len(data) > 0:
             self.offload_file.write(data)
-            # progress bar
-            print('.')
-            v = 100 * (len(data) / self.offload_file_size)
-            print('{}%'.format(v))
-            _sk.sendto(str(v).encode(), ('127.0.0.1', 12349))
-
+            ble_progress_dl(len(data), self.offload_file_size)
             return False
         else:
             print(f'\rRead {self.offload_file.tell()} Bytes')
@@ -296,9 +290,6 @@ class MoanaBle:
         offload_state = OffloadState.AUTHENTICATE
         state_time = datetime.now()
 
-        # for any GUI
-        _u(STATE_DDS_BLE_DOWNLOAD)
-
         while status and self.client and self.client.is_connected:
             if offload_state != last_state:
                 last_state = offload_state
@@ -339,10 +330,9 @@ class MoanaBle:
 
         if offload_state == OffloadState.COMPLETE:
             self.decode()
-            # progress bar
-            v = 100
-            print('{}%'.format(v))
-            _sk.sendto(str(v).encode(), ('127.0.0.1', 12349))
+            v = self.offload_file_size
+            # force 100%
+            ble_progress_dl(v, v)
 
             # todo > why this? it was sleep 20
             time.sleep(5)
@@ -356,10 +346,7 @@ class MoanaBle:
             self.close_file()
             # print('Offload failed')
 
-        # progress bar
-        v = 0
-        print('{}%'.format(v))
-        _sk.sendto(str(v).encode(), ('127.0.0.1', 12349))
+        ble_progress_dl(0, self.offload_file_size)
         return False
 
 

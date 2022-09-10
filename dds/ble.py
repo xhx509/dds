@@ -6,6 +6,8 @@ import traceback
 import bluepy.btle as ble
 import time
 from bleak import BleakScanner, BleakError
+
+from dds.ble_cc26x2 import ble_interact_cc26x2
 from dds.ble_moana import ble_interact_moana
 from dds.macs import macs_black, macs_orange, rm_mac_black, rm_mac_orange, add_mac_orange, add_mac_black, \
     is_mac_in_black, is_mac_in_orange
@@ -24,15 +26,6 @@ from settings.ctx import hook_ble_purge_this_mac_dl_files_folder, \
 TIME_IGNORE_TOO_ERROR = 600
 TIME_IGNORE_ONE_ERROR = 30
 g_logger_errors = {}
-
-
-def ble_progress_dl(v, size, ip, port):
-    _ = int(v) / int(size) * 100
-    _ = _ if _ < 100 else 100
-    _sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    print('{} %'.format(int(_)))
-    _ = '{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_PROGRESS, _)
-    _sk.sendto(str(_).encode(), (ip, port))
 
 
 def ble_show_monitored_macs():
@@ -169,8 +162,9 @@ async def _ble_interact_w_logger(mac, info: str, h, g):
 
     try:
         # await ble_interact_rn4020(mac, info, g)
-        # await ble_interact_cc26x2(mac, info, g)
-        await ble_interact_moana(mac, info, g)
+        await ble_interact_cc26x2(mac, info, g)
+        # await ble_interact_moana(mac, info, g)
+
         _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_OK, sn))
         s = 'history/add&{}&ok&{}&{}&{}'
 
@@ -213,27 +207,3 @@ async def ble_interact_w_logger(macs_det, macs_mon, _lat, _lon, _dt, _h, _h_desc
         rv = await _ble_interact_w_logger(mac, model, _h, g)
         if rv == 0:
             _ble_set_aws_flag()
-
-
-def build_cmd(*args):
-
-    # phone commands use aggregated, a.k.a. transparent, mode
-    # they do NOT follow LI proprietary format (DWG NNABCD...)
-    tp_mode = len(str(args[0]).split(' ')) > 1
-    cmd = str(args[0])
-    if tp_mode:
-        to_send = cmd
-    else:
-        # build LI proprietary command format
-        cmd = str(args[0])
-        arg = str(args[1]) if len(args) == 2 else ''
-        n = '{:02x}'.format(len(arg)) if arg else ''
-        to_send = cmd + ' ' + n + arg
-    to_send += chr(13)
-
-    # debug
-    # print(to_send.encode())
-
-    # know command tag, ex: 'STP'
-    tag = cmd[:3]
-    return to_send, tag

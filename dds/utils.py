@@ -1,11 +1,14 @@
 import os
+import socket
 import time
 from dds.logs import lg_dds as lg
 from mat.crc import calculate_local_file_crc
-from mat.ddh_shared import dds_get_json_vessel_name, get_dds_folder_path_dl_files, get_dds_folder_path_logs
+from mat.ddh_shared import dds_get_json_vessel_name, get_dds_folder_path_dl_files, get_dds_folder_path_logs, \
+    DDH_GUI_UDP_PORT
 from pathlib import Path
 import datetime
 
+from mat.dds_states import STATE_DDS_BLE_DOWNLOAD_PROGRESS
 
 g_tracking_path = ''
 g_last_time_track_log = time.perf_counter()
@@ -72,3 +75,44 @@ def crc_local_vs_remote(path, remote_crc):
     crc = calculate_local_file_crc(path)
     crc = crc.lower()
     return crc == remote_crc, crc
+
+
+def ble_progress_dl(data_len, size, ip='127.0.0.1', port=DDH_GUI_UDP_PORT):
+    _ = int(data_len) / int(size) * 100 if size else 0
+    _ = _ if _ < 100 else 100
+    _sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    print('{} %'.format(int(_)))
+    _ = '{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_PROGRESS, _)
+
+    # always send to localhost
+    _sk.sendto(str(_).encode(), (ip, port))
+
+    if ip == '127.0.0.1':
+        return
+
+    # only maybe somewhere else :)
+    # _sk.sendto(str(_).encode(), (ip, port))
+
+
+def build_cmd(*args):
+
+    # phone commands use aggregated, a.k.a. transparent, mode
+    # they do NOT follow LI proprietary format (DWG NNABCD...)
+    tp_mode = len(str(args[0]).split(' ')) > 1
+    cmd = str(args[0])
+    if tp_mode:
+        to_send = cmd
+    else:
+        # build LI proprietary command format
+        cmd = str(args[0])
+        arg = str(args[1]) if len(args) == 2 else ''
+        n = '{:02x}'.format(len(arg)) if arg else ''
+        to_send = cmd + ' ' + n + arg
+    to_send += chr(13)
+
+    # debug
+    # print(to_send.encode())
+
+    # know command tag, ex: 'STP'
+    tag = cmd[:3]
+    return to_send, tag

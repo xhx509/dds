@@ -1,11 +1,9 @@
 import asyncio
 import glob
 import os
-import pathlib
 from dds.macs import macs_black, macs_orange
 from mat.ddh_shared import send_ddh_udp_gui, get_ddh_disabled_ble_file_flag, dds_get_json_moving_speed, \
-    ddh_get_json_app_type, get_ddh_app_override_file_flag, get_ddh_black_macs_purge_file_flag, \
-    get_dds_is_ble_downloading_flag
+    ddh_get_json_app_type, get_ddh_app_override_file_flag, get_ddh_black_macs_purge_file_flag
 from mat.dds_states import STATE_DDS_BLE_DISABLED, STATE_DDS_BLE_APP_GPS_ERROR_SPEED
 from mat.utils import linux_is_rpi
 import subprocess as sp
