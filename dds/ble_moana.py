@@ -46,7 +46,7 @@ class PacketState(Enum):
 
 class MoanaBle:
     def __init__(self):
-        self.client = None
+        self.cli = None
         self.packet_state = PacketState.IDLE
         self.packet_length = 0
         self.packet_length_buff = ''
@@ -62,11 +62,11 @@ class MoanaBle:
     async def packet_write(self, data: str):
         self.packet_reset()
         length = chr(ord('A') + len(data))
-        await self.client.write_gatt_char(VSP_RX_CHAR_UUID, f'*{length}{data}'.encode())
+        await self.cli.write_gatt_char(VSP_RX_CHAR_UUID, f'*{length}{data}'.encode())
 
     async def packet_complete(self, timeout: int = 60):
         while (self.packet_state != PacketState.COMPLETE) and \
-                (self.client and self.client.is_connected) and \
+                (self.cli and self.cli.is_connected) and \
                 (timeout > 0):
             await asyncio.sleep(0.1)
             timeout -= 0.1
@@ -135,6 +135,10 @@ class MoanaBle:
             for i in data:
                 self.packet_parse(i)
 
+        # todo > check this
+        if self.cli and self.cli.is_connected:
+            await self.cli.disconnect()
+
         try:
             # print('Scanning...')
             device = await BleakScanner.find_device_by_filter(name_filter, timeout=40)
@@ -145,9 +149,9 @@ class MoanaBle:
             # todo > copy this from bleak_do2 to scan by mac, not by name
             if device:
                 print(f'Connecting to {device.name}')
-                self.client = BleakClient(device, disconnected_callback=handle_disconnect)
-                if await self.client.connect():
-                    await self.client.start_notify(VSP_TX_CHAR_UUID, handle_rx)
+                self.cli = BleakClient(device, disconnected_callback=handle_disconnect)
+                if await self.cli.connect():
+                    await self.cli.start_notify(VSP_TX_CHAR_UUID, handle_rx)
                     print('Connected')
                     return True
                 print(f'Failed to connect to Moana sensor {device.name}')
@@ -159,10 +163,10 @@ class MoanaBle:
         return False
 
     async def disconnect(self):
-        if self.client and self.client.is_connected:
+        if self.cli and self.cli.is_connected:
             print('Disconnecting')
             await self.packet_write('.')
-            await self.client.disconnect()
+            await self.cli.disconnect()
 
     async def authenticate(self):
         print('Authenticating')
@@ -290,7 +294,7 @@ class MoanaBle:
         offload_state = OffloadState.AUTHENTICATE
         state_time = datetime.now()
 
-        while status and self.client and self.client.is_connected:
+        while status and self.cli and self.cli.is_connected:
             if offload_state != last_state:
                 last_state = offload_state
                 state_time = datetime.now()
@@ -356,4 +360,5 @@ async def ble_interact_moana(mac, info, g):
 
     lg.a('interacting with Moana logger')
     lc = MoanaBle()
-    await lc.download_recipe()
+    if lc:
+        await lc.download_recipe()

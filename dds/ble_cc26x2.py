@@ -4,13 +4,14 @@ import os
 import time
 from bleak import BleakScanner, BleakClient, BleakError
 from datetime import datetime, timezone, timedelta
-
+from mat.ddh_shared import send_ddh_udp_gui as _u
 from dds.ble_scan import ble_scan_by_mac
 from dds.logs import lg_dds as lg
 from dds.utils import crc_local_vs_remote, ble_progress_dl, build_cmd
 from mat.ble.bluepy.cc26x2r_utils import utils_logger_is_cc26x2r_new
 from mat.ddh_shared import DDH_GUI_UDP_PORT, get_dl_folder_path_from_mac, \
     create_folder_logger_by_mac
+from mat.dds_states import STATE_DDS_REQUEST_PLOT
 from mat.logger_controller import SET_TIME_CMD, DEL_FILE_CMD, SWS_CMD, RWS_CMD
 from mat.logger_controller_ble import DWG_FILE_CMD, CRC_CMD
 from mat.utils import dir_ans_to_dict
@@ -190,12 +191,16 @@ class BleCC26X2:
             lg.a('speed {} KBps'.format(speed / 1000))
         return rv, self.ans
 
-    async def connect(self, mac) -> bool:
+    async def connect(self, mac):
         def cb_disc(_: BleakClient):
             lg.a("disconnected OK")
 
         def c_rx(_: int, b: bytearray):
             self.ans += b
+
+        # todo > see this makes sense
+        if self.cli and self.cli.is_connected:
+            await self.cli.disconnect()
 
         _d = await ble_scan_by_mac(mac)
         try:
@@ -204,16 +209,15 @@ class BleCC26X2:
                 self.cli = BleakClient(_d, disconnected_callback=cb_disc)
                 if await self.cli.connect():
                     await self.cli.start_notify(UUID_T, c_rx)
-                    return True
+                    return 0
         except (asyncio.TimeoutError, BleakError, OSError):
             pass
-        return False
+        return 1
 
     async def download_recipe(self, mac, g=None):
 
         rv = await self.connect(mac)
-        if not rv:
-            lg.a('failed connecting {}'.format(mac))
+        _rae(rv, 'connecting')
 
         if g:
             rv = await self.cmd_sws(g)
@@ -227,8 +231,8 @@ class BleCC26X2:
 
         # rv = await self.cmd_gfv()
         # _rae(rv, 'gfv')
-        rv = await self.cmd_mts()
-        _rae(rv, 'mts')
+        # rv = await self.cmd_mts()
+        # _rae(rv, 'mts')
 
         # rv = await self.cmd_gtm()
         # _rae(rv, 'gtm')
@@ -238,6 +242,7 @@ class BleCC26X2:
         rv, ls = await self.cmd_dir()
         _rae(rv, 'dir error ' + str(rv))
 
+        any_dl = False
         for name, size in ls.items():
             # download file
             rv = await self.cmd_dwg(name)
@@ -268,6 +273,7 @@ class BleCC26X2:
             rv = await self.cmd_del(name)
             _rae(rv, 'del')
             lg.a('file {} deleted in logger OK'.format(name))
+            any_dl = True
 
         # if g:
         #     rv = await self.cmd_rws(g)
@@ -281,6 +287,13 @@ class BleCC26X2:
         if self.cli and self.cli.is_connected:
             await self.cli.disconnect()
 
+        # plots
+        if not any_dl:
+            return
+
+        # plotting request to DDH
+        _u('{}/{}'.format(STATE_DDS_REQUEST_PLOT, mac))
+
 
 async def ble_interact_cc26x2(mac, info, g):
     if not utils_logger_is_cc26x2r_new(mac, info):
@@ -288,7 +301,8 @@ async def ble_interact_cc26x2(mac, info, g):
 
     lg.a('interacting with CC26X2 logger')
     lc = BleCC26X2()
-    await lc.download_recipe(mac, g)
+    if lc:
+        await lc.download_recipe(mac, g)
 
 
 # test

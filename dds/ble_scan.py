@@ -8,13 +8,11 @@ from bleak import BleakScanner, BleakError
 from dds.logs import lg_dds as lg
 
 
-def _ble_is_supported_logger(s, mac):
+def _ble_is_supported_logger(s):
     # lt: logger types
-    lt = ['DO-2', 'DO-1', 'MOANA', 'MAT-2W']
+    lt = ['DO-2', 'DO-1', 'DO-X', 'MOANA', 'MAT-2W']
     for t in lt:
         if t in s:
-            _ = '{} supported logger type, mac {}'
-            print(_.format(s, mac))
             return True
 
 
@@ -30,7 +28,7 @@ async def _ble_scan(h) -> tuple:
 
     try:
         for d in await BleakScanner.discover(timeout=5):
-            if _ble_is_supported_logger(d.name, d.address):
+            if _ble_is_supported_logger(d.name):
                 li[d.address.lower()] = d.name
         return rv, li
 
@@ -58,10 +56,15 @@ async def ble_scan_by_mac(mac, till=5, ad='hci0'):
 
     try:
         disc_result = await BleakScanner.discover(adapter=ad)
-        macs_around = [i.address for i in disc_result]
+
+        # we try uppercase and lowercase :)
+        macs_around = [i.address.lower() for i in disc_result]
+        macs_around += [i.address.upper() for i in disc_result]
         if mac not in macs_around:
             return
+
         _d = await BleakScanner.find_device_by_address(mac, timeout=till)
         return _d
+
     except (asyncio.TimeoutError, BleakError, OSError):
         lg.a('hardware error during scan')

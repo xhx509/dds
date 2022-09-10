@@ -16,7 +16,7 @@ from dds.utils import print_ble_scan_banner
 from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, \
     get_dl_folder_path_from_mac, \
     get_dds_aws_has_something_to_do_flag, \
-    get_dds_folder_path_macs_black, ddh_get_macs_from_json_file
+    get_dds_folder_path_macs_black, dds_get_macs_from_json_file
 from mat.dds_states import *
 from dds.logs import lg_dds as lg
 from settings.ctx import hook_ble_purge_this_mac_dl_files_folder, \
@@ -29,14 +29,9 @@ g_logger_errors = {}
 
 
 def ble_show_monitored_macs():
-    mm = ddh_get_macs_from_json_file()
+    mm = dds_get_macs_from_json_file()
     for i in mm:
         lg.a('debug: monitored mac {}'.format(i))
-
-
-def ble_set_last_haul(fol, s):
-    # todo > implement this as glog.glog[-1]
-    pass
 
 
 def ble_apply_debug_hooks_at_boot():
