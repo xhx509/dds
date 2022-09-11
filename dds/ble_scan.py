@@ -1,5 +1,7 @@
 import asyncio
 import time
+
+from dds.n_hooks import hook_notify_ble_scan_exception
 from mat.ddh_shared import send_ddh_udp_gui as _u
 from dds.sns import sns_notify_ble_scan_exception
 from dds.utils import print_ble_scan_banner
@@ -46,7 +48,7 @@ async def ble_scan(_lat, _lon, _dt, _h, _h_desc):
     rv, det = await _ble_scan(0)
     if rv:
         # todo > pass antenna to this exception
-        sns_notify_ble_scan_exception(_lat, _lon)
+        hook_notify_ble_scan_exception('sns', _lat, _lon)
         return {}
     return det
 

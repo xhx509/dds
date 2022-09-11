@@ -42,7 +42,7 @@ if __name__ == '__main__':
     gps_wait_for_it_at_boot()
     lat, lon, tg, speed = gps_measure()
     gps_clock_sync_if_so(tg)
-    # sns_notify_ddh_booted(lat, lon)
+    # hook_notify_ddh_booted('sns', lat, lon)
 
     m_j = dds_get_macs_from_json_file()
 
@@ -64,8 +64,8 @@ if __name__ == '__main__':
             args = [det, m_j, lat, lon, tg, h, h_d]
             ctx.ael.run_until_complete(ble_interact_w_logger(*args))
 
+        cnv_serve()
         # sns_serve()
-        # cnv_serve()
         # aws_serve()
 
         # todo > check net service

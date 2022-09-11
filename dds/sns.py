@@ -11,7 +11,7 @@ from mat.ddh_shared import dds_get_json_vessel_name, ddh_get_commit, \
     get_dds_folder_path_sns, dds_get_commit, get_ddh_sns_force_file_flag, ddh_get_json_mac_dns
 from mat.utils import linux_is_rpi3, linux_is_rpi4
 from settings import ctx
-from dds.logs import lg_dds as lg
+from dds.logs import lg_sns as lg
 
 
 g_last_notify = time.perf_counter()
@@ -39,40 +39,43 @@ def _sns_notify(topic_arn, short_s, long_s):
         )
         # response format very complicated, only use:
         if int(response['ResponseMetadata']['HTTPStatusCode']) == 200:
-            lg.a('SNS message published OK -> {}'.format(short_s))
+            lg.a('message published OK -> {}'.format(short_s))
             return 0
 
     except (ClientError, EndpointConnectionError, Exception) as e:
-        lg.a('SNS error: exception {}'.format(e))
+        lg.a('error: exception {}'.format(e))
         return 1
 
 
 def sns_serve():
     if not ctx.sns_en:
         lg.a('SNS not enabled')
-        return
-
-    flag = get_ddh_sns_force_file_flag()
-    if not os.path.isfile(flag):
-        return
-    lg.a('SNS debug: detected force flag {}'.format(flag))
-    os.unlink(flag)
+        return 1
 
     # -----------------
     # ARN topic checks
     # -----------------
     topic_arn = os.getenv('DDH_AWS_SNS_TOPIC_ARN')
     if topic_arn is None:
-        lg.a('SNS error: missing topic ARN')
-        return 1
+        lg.a('error: missing topic ARN')
+        return 2
 
     if ':' not in topic_arn:
-        lg.a('SNS error: topic ARN malformed')
-        return 1
+        lg.a('error: topic ARN malformed')
+        return 3
+
+    # --------------------------------------------------
+    # flag is set by SNS functions, cleared at the end
+    # --------------------------------------------------
+    flag = get_ddh_sns_force_file_flag()
+    if not os.path.isfile(flag):
+        return 4
+    lg.a('debug: detected force flag {}'.format(flag))
 
     # --------------------------------
     # grab & send SNS notifications
     # --------------------------------
+    rv_all_sns = 0
     fol = get_dds_folder_path_sns()
     files = glob.glob('{}/*.sns'.format(fol))
     for _ in files:
@@ -80,11 +83,16 @@ def sns_serve():
             d = json.load(f)
             s = '{} - {}'.format(d['reason'], d['vessel'])
         rv = _sns_notify(topic_arn, s, json.dumps(d))
+        rv_all_sns += 0
 
         # delete SNS file
         if rv == 0:
-            lg.a('SNS served {}'.format(_))
+            lg.a('served {}'.format(_))
             os.unlink(_)
+
+    if rv_all_sns == 0 and os.path.isfile(flag):
+        lg.a('debug: cleared force flag {}'.format(flag))
+        os.unlink(flag)
 
 
 def _sns_w_file(reason, lat, lon):
@@ -138,7 +146,7 @@ def sns_notify_ble_scan_exception(lat, lon):
     _sns_req()
 
 
-def sns_notify_dissolved_oxygen_zeros(mac, lat, lon):
+def sns_notify_oxygen_zeros(mac, lat, lon):
     sn = ddh_get_json_mac_dns(mac)
     s = 'LOGGER_{}_({})_OXYGEN_ERROR'.format(sn, mac)
     _sns_w_file(s, lat, lon)

@@ -11,8 +11,7 @@ from dds.ble_cc26x2 import ble_interact_cc26x2
 from dds.ble_moana import ble_interact_moana
 from dds.macs import macs_black, macs_orange, rm_mac_black, rm_mac_orange, add_mac_orange, add_mac_black, \
     is_mac_in_black, is_mac_in_orange
-from dds.sns import sns_notify_logger_error, sns_notify_ble_scan_exception
-from dds.utils import print_ble_scan_banner
+from dds.n_hooks import hook_notify_logger_error
 from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, \
     get_dl_folder_path_from_mac, \
     get_dds_aws_has_something_to_do_flag, \
@@ -52,7 +51,7 @@ def _ble_logger_result_to_sns(rv, mac, lat, lon):
     if rv == 0:
         return
 
-    sns_notify_logger_error(mac, lat, lon)
+    hook_notify_logger_error('sns', mac, lat, lon)
 
 
 def _ble_logger_result_to_macs(rv, mac, lat, lon):
