@@ -1,7 +1,7 @@
 import asyncio
 import time
 
-from dds.n_hooks import hook_notify_ble_scan_exception
+from dds.hooks import hook_notify_ble_scan_exception
 from mat.ddh_shared import send_ddh_udp_gui as _u
 from dds.sns import sns_notify_ble_scan_exception
 from dds.utils import print_ble_scan_banner

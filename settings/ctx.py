@@ -3,7 +3,9 @@ import glob
 import os
 from dds.macs import macs_black, macs_orange
 from mat.ddh_shared import send_ddh_udp_gui, get_ddh_disabled_ble_file_flag, dds_get_json_moving_speed, \
-    ddh_get_json_app_type, get_ddh_app_override_file_flag, get_ddh_black_macs_purge_file_flag
+    ddh_get_json_app_type, get_ddh_app_override_file_flag, get_ddh_black_macs_purge_file_flag, get_dds_folder_path_sns, \
+    get_dds_folder_path_macs, get_dds_folder_path_macs_black, get_dds_folder_path_macs_orange, \
+    get_dds_folder_path_dl_files, get_dds_folder_path_logs
 from mat.dds_states import STATE_DDS_BLE_DISABLED, STATE_DDS_BLE_APP_GPS_ERROR_SPEED
 from mat.utils import linux_is_rpi
 import subprocess as sp
@@ -18,9 +20,10 @@ plt_units_depth = None
 span_dict = None
 
 
-# AWS / SNS: enabled or not
+# AWS / SNS / SQS: enabled or not
 aws_en = True
 sns_en = True
+sqs_en = True
 
 
 # BLE: enabled or not + switch capability
@@ -76,17 +79,27 @@ mat_cfg_do2_fallback = {
 ael = asyncio.get_event_loop()
 
 
-def macs_create_color_folders():
-    r = 'macs'
+def dds_create_macs_color_folders():
+    r = get_dds_folder_path_macs()
     os.makedirs(r, exist_ok=True)
-    r = 'macs/black'
+    r = get_dds_folder_path_macs_black()
     os.makedirs(r, exist_ok=True)
-    r = 'macs/orange'
+    r = get_dds_folder_path_macs_orange()
     os.makedirs(r, exist_ok=True)
 
 
-def sns_create_folder():
-    r = 'sns'
+def dds_create_sns_folder():
+    r = get_dds_folder_path_sns()
+    os.makedirs(r, exist_ok=True)
+
+
+def dds_create_dl_files_folder():
+    r = get_dds_folder_path_dl_files()
+    os.makedirs(r, exist_ok=True)
+
+
+def dds_create_logs_folder():
+    r = get_dds_folder_path_logs()
     os.makedirs(r, exist_ok=True)
 
 

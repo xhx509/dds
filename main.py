@@ -16,35 +16,37 @@ from mat.ddh_shared import send_ddh_udp_gui as _u, \
     dds_check_conf_json_file, \
     dds_get_macs_from_json_file, PID_FILE_DDS
 from settings import ctx
-from settings.ctx import macs_create_color_folders, \
+from settings.ctx import dds_create_macs_color_folders, \
     macs_color_show_at_boot, \
     op_conditions_met, ble_get_antenna_type, \
-    sns_create_folder
+    dds_create_sns_folder, dds_create_dl_files_folder, dds_create_logs_folder
 
 
 if __name__ == '__main__':
 
     ensure_we_run_only_one_instance('dds_core')
+    dds_create_macs_color_folders()
+    dds_create_sns_folder()
+    dds_create_dl_files_folder()
+    dds_create_logs_folder()
+
     dds_log_core_start_at_boot()
     dds_log_tracking_start_at_boot()
-    macs_create_color_folders()
-    sns_create_folder()
+
+    dds_check_conf_json_file()
+    m_j = dds_get_macs_from_json_file()
     macs_color_show_at_boot()
     ble_show_monitored_macs()
     ble_apply_debug_hooks_at_boot()
-    dds_check_conf_json_file()
     linux_app_write_pid(PID_FILE_DDS)
     _u(STATE_DDS_BLE_APP_BOOT)
-
-    # todo > add SQS stuff
 
     gps_connect_shield()
     gps_wait_for_it_at_boot()
     lat, lon, tg, speed = gps_measure()
     gps_clock_sync_if_so(tg)
-    # hook_notify_ddh_booted('sns', lat, lon)
 
-    m_j = dds_get_macs_from_json_file()
+    # hook_notify_ddh_booted('sns', lat, lon)
 
     while 1:
         gps_tell_vessel_name()
@@ -59,13 +61,18 @@ if __name__ == '__main__':
 
         if op_conditions_met(speed):
             h, h_d = ble_get_antenna_type()
+
+            # scan to detect BLE loggers around
             args = [lat, lon, tg, h, h_d]
             det = ctx.ael.run_until_complete(ble_scan(*args))
+
+            # interact with detected loggers, if any
             args = [det, m_j, lat, lon, tg, h, h_d]
             ctx.ael.run_until_complete(ble_interact_w_logger(*args))
 
         cnv_serve()
         # sns_serve()
         # aws_serve()
+        # sqs_serve()
 
         # todo > check net service

@@ -329,7 +329,7 @@ class MoanaBle:
                 # await self.clear_data()
                 await self.disconnect()
                 offload_state = OffloadState.COMPLETE
-                # todo > remove this
+                # todo > remove this, but this same todo maybe wrong
                 break
 
         if offload_state == OffloadState.COMPLETE:

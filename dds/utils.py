@@ -7,8 +7,8 @@ from mat.ddh_shared import dds_get_json_vessel_name, get_dds_folder_path_dl_file
     DDH_GUI_UDP_PORT
 from pathlib import Path
 import datetime
-
 from mat.dds_states import STATE_DDS_BLE_DOWNLOAD_PROGRESS
+
 
 g_tracking_path = ''
 g_last_time_track_log = time.perf_counter()
