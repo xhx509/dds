@@ -63,11 +63,11 @@ def _ble_logger_result_to_macs(rv, mac, lat, lon):
 
     g_logger_errors[mac] += 1
     v = g_logger_errors[mac]
-    if v > 5:
-        v = 5
+    if v > 10:
+        v = 10
         g_logger_errors[mac] = 0
 
-    if v == 5:
+    if v == 10:
         rm_mac_orange(mac)
         add_mac_black(mac)
         _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_ERROR, mac))

@@ -36,7 +36,7 @@ def _add_mac(c, mac):
     assert c in ('orange', 'black')
     ft = get_dds_loggers_forget_time()
     if c == 'orange':
-        ft = 30
+        ft = 15
     t = int(time.time()) + ft
     fol = str(get_dds_folder_path_macs() / c)
     mac = mac.replace(':', '-')

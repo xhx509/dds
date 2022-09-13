@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../ddh/.idea/ddh.iml" filepath="$PROJECT_DIR$/../ddh/.idea/ddh.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../ddh_tools/.idea/ddh_tools.iml" filepath="$PROJECT_DIR$/../ddh_tools/.idea/ddh_tools.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/dds.iml" filepath="$PROJECT_DIR$/.idea/dds.iml" />
       <module fileurl="file://$PROJECT_DIR$/../lowell-mat/.idea/lowell-mat.iml" filepath="$PROJECT_DIR$/../lowell-mat/.idea/lowell-mat.iml" />
     </modules>

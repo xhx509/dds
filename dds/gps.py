@@ -1,7 +1,8 @@
 import datetime
 import time
 import serial
-from mat.dds_states import STATE_DDS_BLE_APP_GPS_ERROR_POSITION, STATE_DDS_NOTIFY_BOAT_NAME, STATE_DDS_NOTIFY_GPS
+from mat.dds_states import STATE_DDS_BLE_APP_GPS_ERROR_POSITION, STATE_DDS_NOTIFY_BOAT_NAME, STATE_DDS_NOTIFY_GPS, \
+    STATE_DDS_NOTIFY_GPS_BOOT
 from mat.gps import PORT_CTRL, PORT_DATA
 from mat.utils import linux_is_rpi, linux_set_datetime
 from settings import ctx as cu
@@ -11,7 +12,15 @@ from mat.ddh_shared import send_ddh_udp_gui as _u, dds_get_json_vessel_name
 from dds.logs import lg_dds as lg
 
 
-g_last_time_told_vessel = time.perf_counter()
+GPS_CACHE_SECS = 30
+
+g_ts_told_vessel = time.perf_counter()
+g_ts_told_gps = 0
+g_ts_gps = None
+
+
+def gps_get_cache():
+    return g_ts_gps
 
 
 def _coord_decode(coord: str):
@@ -118,6 +127,9 @@ def gps_measure():
     till = time.perf_counter() + 2
     sp.flushInput()
 
+    global g_ts_told_gps
+    global g_ts_gps
+
     while 1:
         if time.perf_counter() > till:
             break
@@ -129,9 +141,20 @@ def gps_measure():
             lon = '{:+.6f}'.format(g[1])
             if g[3] == '':
                 g[3] = '0'
-            # float, float, datetime UTC, string
+            # float, float, datetime UTC, speed
             _u('{}/{},{}'.format(STATE_DDS_NOTIFY_GPS, lat, lon))
-            return lat, lon, g[2], float(g[3])
+            g_ts_told_gps = time.perf_counter()
+            g_ts_gps = lat, lon, g[2], float(g[3])
+            return g_ts_gps
+
+    # failed, but use cache
+    now = time.perf_counter()
+    if g_ts_told_gps != 0 and now < g_ts_told_gps + GPS_CACHE_SECS:
+        lat, lon, dt_utc, speed = g_ts_gps
+        _u('{}/{},{}'.format(STATE_DDS_NOTIFY_GPS, lat, lon))
+        return lat, lon, dt_utc, speed
+    else:
+        g_ts_gps = '', '', None, float(0)
 
     # failed
     _u(STATE_DDS_BLE_APP_GPS_ERROR_POSITION)
@@ -163,7 +186,13 @@ def gps_wait_for_it_at_boot():
     # 2 to 4 minutes, warm <= 45 secs, hot <= 22 secs
 
     till = time.perf_counter() + 300
+    progress_till = time.perf_counter()
+
     while time.perf_counter() < till:
+        _ = till - progress_till
+
+        _u('{}/{}'.format(STATE_DDS_NOTIFY_GPS_BOOT, _))
+
         g = gps_measure()
         if g:
             # lat, lon, datetime UTC, speed
@@ -174,14 +203,14 @@ def gps_wait_for_it_at_boot():
 
 
 def gps_tell_vessel_name():
-    global g_last_time_told_vessel
+    global g_ts_told_vessel
     now = time.perf_counter()
-    if g_last_time_told_vessel + 10 < now:
+    if g_ts_told_vessel + 10 < now:
         # too recent, leave
         return
     v = dds_get_json_vessel_name()
     _u('{}/{}'.format(STATE_DDS_NOTIFY_BOAT_NAME, v))
-    g_last_time_told_vessel = time.perf_counter()
+    g_ts_told_vessel = time.perf_counter()
 
 
 if __name__ == '__main__':
