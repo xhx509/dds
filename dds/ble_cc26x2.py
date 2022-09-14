@@ -252,6 +252,10 @@ class BleCC26X2:
         any_dl = False
         for name, size in ls.items():
 
+            # skip MAT.cfg
+            if name.endswith('.cfg'):
+                continue
+
             # download file
             rv = await self.cmd_dwg(name)
             _rae(rv, 'dwg')
@@ -267,8 +271,10 @@ class BleCC26X2:
             rv, r_crc = await self.cmd_crc(name)
             _rae(rv, 'crc')
             rv, l_crc = crc_local_vs_remote(path, r_crc)
+            s = 'file {} local CRC {} remote CRC {}'
+            lg.a(s.format(name, l_crc, r_crc))
             if (not rv) and os.path.exists(path):
-                lg.a('removing local file {} with bad CRC'.format(path))
+                lg.a('removing local file {} w/ bad CRC'.format(path))
                 os.unlink(path)
 
             # save file in our local disk
