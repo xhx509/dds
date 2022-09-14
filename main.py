@@ -23,6 +23,11 @@ from settings.ctx import dds_create_macs_color_folders, \
     dds_create_sns_folder, dds_create_dl_files_folder, dds_create_logs_folder
 
 
+# todo > tell when file converted OK
+# todo > include the linux BLE connection parameters in run_dds.sh
+# todo > lowell file conversion in a single file, not 2
+
+
 if __name__ == '__main__':
 
     ensure_we_run_only_one_instance('dds_core')
@@ -40,6 +45,7 @@ if __name__ == '__main__':
     ble_show_monitored_macs()
     ble_apply_debug_hooks_at_boot()
     linux_app_write_pid(PID_FILE_DDS)
+
     _u(STATE_DDS_BLE_APP_BOOT)
 
     gps_connect_shield()
