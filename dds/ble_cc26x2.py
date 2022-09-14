@@ -24,12 +24,16 @@ import humanize
 # todo > remove all lg.a() from here
 
 # new DO loggers
-#UUID_T = 'f000c0c2-0451-4000-b000-000000000000'
-#UUID_R = 'f000c0c1-0451-4000-b000-000000000000'
+UUID_T = 'f000c0c2-0451-4000-b000-000000000000'
+UUID_R = 'f000c0c1-0451-4000-b000-000000000000'
 
 # old DO loggers
-UUID_T = 'f0001132-0451-4000-b000-000000000000'
-UUID_R = 'f0001131-0451-4000-b000-000000000000'
+# UUID_T = 'f0001132-0451-4000-b000-000000000000'
+# UUID_R = 'f0001131-0451-4000-b000-000000000000'
+
+
+def _utils_logger_is_cc26x2r(mac, info: str):
+    return 'DO-' in info
 
 
 def _rae(rv, s):
@@ -213,6 +217,9 @@ class BleCC26X2:
                 lg.a('connecting {}'.format(mac))
                 self.cli = BleakClient(_d, disconnected_callback=cb_disc)
                 if await self.cli.connect():
+                    # todo > check this MTU size matches firmware
+                    self.cli._mtu_size = 244
+                    lg.a('mtu {}'.format(self.cli.mtu_size))
                     await self.cli.start_notify(UUID_T, c_rx)
                     return 0
         except (asyncio.TimeoutError, BleakError, OSError):
@@ -307,7 +314,7 @@ class BleCC26X2:
 
 
 async def ble_interact_cc26x2(mac, info, g):
-    if not utils_logger_is_cc26x2r(mac, info):
+    if not _utils_logger_is_cc26x2r(mac, info):
         s = 'not interacting w/ logger CC26X2, info {}'
         lg.a(s.format(info))
         return
