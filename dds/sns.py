@@ -8,7 +8,7 @@ from botocore.exceptions import EndpointConnectionError, ClientError
 from mat.aws.sns import get_aws_sns_client
 import json
 from mat.ddh_shared import dds_get_json_vessel_name, ddh_get_commit, \
-    get_dds_folder_path_sns, dds_get_commit, get_ddh_sns_force_file_flag, ddh_get_json_mac_dns
+    get_dds_folder_path_sns, dds_get_commit, dds_get_sns_force_file_flag, dds_get_json_mac_dns
 from mat.utils import linux_is_rpi3, linux_is_rpi4
 from settings import ctx
 from dds.logs import lg_sns as lg
@@ -65,7 +65,7 @@ def sns_serve():
     # --------------------------------------------------
     # flag is set by SNS functions, cleared at the end
     # --------------------------------------------------
-    flag = get_ddh_sns_force_file_flag()
+    flag = dds_get_sns_force_file_flag()
     if not os.path.isfile(flag):
         return 4
     lg.a('debug: detected force flag {}'.format(flag))
@@ -126,12 +126,12 @@ def _sns_w_request(reason, lat, lon):
     with open(path, 'w') as f:
         json.dump(d, f)
 
-    flag = get_ddh_sns_force_file_flag()
+    flag = dds_get_sns_force_file_flag()
     pathlib.Path(flag).touch()
 
 
 def sns_notify_logger_error(mac, lat, lon):
-    sn = ddh_get_json_mac_dns(mac)
+    sn = dds_get_json_mac_dns(mac)
     s = 'LOGGER_{}_({})_TOO_MANY_ERRORS'.format(sn, mac)
     _sns_w_request(s, lat, lon)
 
@@ -146,7 +146,7 @@ def sns_notify_ble_scan_exception(lat, lon):
 
 
 def sns_notify_oxygen_zeros(mac, lat, lon):
-    sn = ddh_get_json_mac_dns(mac)
+    sn = dds_get_json_mac_dns(mac)
     s = 'LOGGER_{}_({})_OXYGEN_ERROR'.format(sn, mac)
     _sns_w_request(s, lat, lon)
 
@@ -156,6 +156,6 @@ def sns_notify_ddh_booted(lat, lon):
 
 
 def sns_notify_logger_download(mac, lat, lon):
-    sn = ddh_get_json_mac_dns(mac)
+    sn = dds_get_json_mac_dns(mac)
     s = 'LOGGER_{}_({})_DOWNLOAD'.format(sn, mac)
     _sns_w_request(s, lat, lon)

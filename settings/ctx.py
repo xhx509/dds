@@ -2,8 +2,8 @@ import asyncio
 import glob
 import os
 from dds.macs import macs_black, macs_orange
-from mat.ddh_shared import send_ddh_udp_gui, get_ddh_disabled_ble_file_flag, dds_get_json_moving_speed, \
-    ddh_get_json_app_type, get_ddh_app_override_file_flag, get_ddh_black_macs_purge_file_flag, get_dds_folder_path_sns, \
+from mat.ddh_shared import send_ddh_udp_gui, ddh_get_disabled_ble_file_flag, dds_get_json_moving_speed, \
+    ddh_get_json_app_type, ddh_get_app_override_file_flag, dds_get_black_macs_purge_file_flag, get_dds_folder_path_sns, \
     get_dds_folder_path_macs, get_dds_folder_path_macs_black, get_dds_folder_path_macs_orange, \
     get_dds_folder_path_dl_files, get_dds_folder_path_logs
 from mat.dds_states import STATE_DDS_BLE_DISABLED, STATE_DDS_BLE_APP_GPS_ERROR_SPEED
@@ -112,7 +112,7 @@ def macs_color_show_at_boot():
 
 def op_conditions_met(knots) -> bool:
 
-    flag = get_ddh_black_macs_purge_file_flag()
+    flag = dds_get_black_macs_purge_file_flag()
     if os.path.isfile(flag):
         lg.a('[ BLE ] debug: flag macs purge was set')
         for f in glob.glob('macs/black/*'):
@@ -121,12 +121,12 @@ def op_conditions_met(knots) -> bool:
             os.unlink(f)
         os.unlink(flag)
 
-    flag = get_ddh_disabled_ble_file_flag()
+    flag = ddh_get_disabled_ble_file_flag()
     if os.path.isfile(flag):
         _u(STATE_DDS_BLE_DISABLED)
         return False
 
-    flag = get_ddh_app_override_file_flag()
+    flag = ddh_get_app_override_file_flag()
     if os.path.isfile(flag):
         lg.a('[ BLE ] debug: application override set')
         os.unlink(flag)

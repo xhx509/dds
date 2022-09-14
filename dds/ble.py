@@ -6,9 +6,9 @@ from dds.ble_moana import ble_interact_moana
 from dds.macs import macs_black, macs_orange, rm_mac_black, rm_mac_orange, add_mac_orange, add_mac_black, \
     is_mac_in_black, is_mac_in_orange
 from dds.hooks import hook_notify_logger_error
-from mat.ddh_shared import send_ddh_udp_gui as _u, ddh_get_json_mac_dns, \
+from mat.ddh_shared import send_ddh_udp_gui as _u, dds_get_json_mac_dns, \
     get_dl_folder_path_from_mac, \
-    get_dds_aws_has_something_to_do_flag, \
+    dds_get_aws_has_something_to_do_flag, \
     get_dds_folder_path_macs_black, dds_get_macs_from_json_file
 from mat.dds_states import *
 from dds.logs import lg_dds as lg
@@ -36,7 +36,7 @@ def ble_apply_debug_hooks_at_boot():
 
 
 def _ble_set_aws_flag():
-    flag = get_dds_aws_has_something_to_do_flag()
+    flag = dds_get_aws_has_something_to_do_flag()
     pathlib.Path(flag).touch()
     lg.a('debug: flag ddh_aws_has_something_to_do set')
 
@@ -95,7 +95,7 @@ async def _ble_interact_w_logger(mac, info: str, h, g):
     # variables
     rv = 0
     lat, lon, dt = g
-    sn = ddh_get_json_mac_dns(mac)
+    sn = dds_get_json_mac_dns(mac)
     _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD, sn))
     lg.a('querying sensor {} / mac {}'.format(sn, mac))
     s = 'history/add&{}&ok&{}&{}&{}'

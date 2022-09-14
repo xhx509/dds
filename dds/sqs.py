@@ -5,7 +5,7 @@ import subprocess as sp
 import json
 import boto3
 from dds.logs import lg_sqs as lg
-from mat.ddh_shared import ddh_get_json_mac_dns
+from mat.ddh_shared import dds_get_json_mac_dns
 
 
 # todo > do SQS as SNS based on files after testing
@@ -112,7 +112,7 @@ def sqs_notify_ble_scan_exception(lat, lon):
 
 def _sqs_msg_logger_template(op, mac, lat, lon):
     try:
-        lg_sn = ddh_get_json_mac_dns(mac)
+        lg_sn = dds_get_json_mac_dns(mac)
         q = _sqs_get_queue(WS_QUEUE_IN_NAME)
         s = '{}/{}/{}'.format(op, lg_sn, mac)
         m = _sqs_build_json_msg(s, lat, lon)
@@ -123,19 +123,19 @@ def _sqs_msg_logger_template(op, mac, lat, lon):
 
 
 def sqs_notify_logger_error(mac, lat, lon):
-    lg_sn = ddh_get_json_mac_dns(mac)
+    lg_sn = dds_get_json_mac_dns(mac)
     op = WS_LOGGER_ERRORS_MAX
     return _sqs_msg_logger_template(op, mac, lg_sn, lat, lon)
 
 
 def sqs_notify_oxygen_zeros(mac, lat, lon):
-    lg_sn = ddh_get_json_mac_dns(mac)
+    lg_sn = dds_get_json_mac_dns(mac)
     op = WS_LOGGER_ERROR_OXYGEN
     return _sqs_msg_logger_template(op, mac, lg_sn, lat, lon)
 
 
 def sqs_notify_logger_download(mac, lat, lon):
-    lg_sn = ddh_get_json_mac_dns(mac)
+    lg_sn = dds_get_json_mac_dns(mac)
     op = WS_LOGGER_DOWNLOAD
     return _sqs_msg_logger_template(op, mac, lg_sn, lat, lon)
 
