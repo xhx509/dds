@@ -7,6 +7,7 @@ from dds.cnv import cnv_serve
 from dds.gps import gps_wait_for_it_at_boot, \
     gps_measure, gps_connect_shield, gps_clock_sync_if_so, \
     gps_tell_vessel_name, gps_get_cache
+from dds.net import net_serve
 from dds.sns import sns_serve, sns_notify_ddh_booted
 from dds.utils import dds_log_core_start_at_boot, dds_log_tracking_start_at_boot, dds_log_tracking_add
 from dds.ble import ble_apply_debug_hooks_at_boot, ble_show_monitored_macs, ble_interact_w_logger
@@ -76,5 +77,4 @@ if __name__ == '__main__':
         # sns_serve()
         # aws_serve()
         # sqs_serve()
-
-        # todo > check net service
+        net_serve()
