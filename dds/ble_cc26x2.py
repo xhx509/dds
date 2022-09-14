@@ -23,8 +23,13 @@ import humanize
 # todo > move this file or part of it to mat library
 # todo > remove all lg.a() from here
 
-UUID_T = 'f000c0c2-0451-4000-b000-000000000000'
-UUID_R = 'f000c0c1-0451-4000-b000-000000000000'
+# new DO loggers
+#UUID_T = 'f000c0c2-0451-4000-b000-000000000000'
+#UUID_R = 'f000c0c1-0451-4000-b000-000000000000'
+
+# old DO loggers
+UUID_T = 'f0001132-0451-4000-b000-000000000000'
+UUID_R = 'f0001131-0451-4000-b000-000000000000'
 
 
 def _rae(rv, s):

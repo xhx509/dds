@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="97673b0c-cb69-4042-9f58-1715bc626e53" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/../ddh_tools/dt_kill_dds.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../ddh_tools/dt_kill_dds.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dds/ble_cc26x2.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble_cc26x2.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -199,7 +198,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/dds/ble_cc26x2.py</url>
-          <line>182</line>
+          <line>187</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
