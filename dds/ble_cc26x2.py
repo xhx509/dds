@@ -8,7 +8,7 @@ from mat.ddh_shared import send_ddh_udp_gui as _u
 from dds.ble_scan import ble_scan_by_mac
 from dds.logs import lg_dds as lg
 from dds.utils import crc_local_vs_remote, ble_progress_dl, build_cmd
-from mat.ble.bluepy.cc26x2r_utils import utils_logger_is_cc26x2r_new
+from mat.ble.bluepy.cc26x2r_utils import utils_logger_is_cc26x2r_new, utils_logger_is_cc26x2r
 from mat.ddh_shared import DDH_GUI_UDP_PORT, get_dl_folder_path_from_mac, \
     create_folder_logger_by_mac
 from mat.dds_states import STATE_DDS_REQUEST_PLOT
@@ -229,21 +229,24 @@ class BleCC26X2:
         rv, t = await self.cmd_utm()
         _rae(rv, 'utm')
 
-        # rv = await self.cmd_gfv()
-        # _rae(rv, 'gfv')
+        rv = await self.cmd_gfv()
+        _rae(rv, 'gfv')
+
         # rv = await self.cmd_mts()
         # _rae(rv, 'mts')
 
-        # rv = await self.cmd_gtm()
-        # _rae(rv, 'gtm')
-        # rv = await self.cmd_stm()
-        # _rae(rv, 'stm')
+        rv = await self.cmd_gtm()
+        _rae(rv, 'gtm')
+        rv = await self.cmd_stm()
+        _rae(rv, 'stm')
 
         rv, ls = await self.cmd_dir()
         _rae(rv, 'dir error ' + str(rv))
 
+        # iterate files present in logger
         any_dl = False
         for name, size in ls.items():
+
             # download file
             rv = await self.cmd_dwg(name)
             _rae(rv, 'dwg')
@@ -275,14 +278,11 @@ class BleCC26X2:
             lg.a('file {} deleted in logger OK'.format(name))
             any_dl = True
 
-        # if g:
-        #     rv = await self.cmd_rws(g)
-        #     _rae(rv, 'rws')
-        # else:
-        #     rv = await self.cmd_run()
-        #     _rae(rv, 'run')
+        if g:
+            rv = await self.cmd_rws(g)
+            _rae(rv, 'rws')
 
-        # print('download OK')
+        lg.a('logger {} download OK'.format(mac))
 
         if self.cli and self.cli.is_connected:
             await self.cli.disconnect()
@@ -296,10 +296,13 @@ class BleCC26X2:
 
 
 async def ble_interact_cc26x2(mac, info, g):
-    if not utils_logger_is_cc26x2r_new(mac, info):
+    if not utils_logger_is_cc26x2r(mac, info):
+        s = 'not interacting w/ logger CC26X2, info {}'
+        lg.a(s.format(info))
         return
 
-    lg.a('interacting with CC26X2 logger')
+    s = 'interacting with CC26X2 logger, info {}'
+    lg.a(s.format(info))
     lc = BleCC26X2()
     if lc:
         await lc.download_recipe(mac, g)

@@ -101,6 +101,9 @@ async def _ble_interact_w_logger(mac, info: str, h, g):
     s = 'history/add&{}&ok&{}&{}&{}'
 
     try:
+        # -------------------------
+        # main logger interaction
+        # -------------------------
         # await ble_interact_rn4020(mac, info, g)
         await ble_interact_cc26x2(mac, info, g)
         # await ble_interact_moana(mac, info, g)

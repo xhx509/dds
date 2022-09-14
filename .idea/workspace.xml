@@ -3,7 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="97673b0c-cb69-4042-9f58-1715bc626e53" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dds/ble.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dds/ble_cc26x2.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble_cc26x2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/cc26x2r_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/cc26x2r_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
