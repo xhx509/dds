@@ -4,8 +4,19 @@
 import time
 import subprocess as sp
 import sys
-from mat.ddh_shared import send_ddh_udp_gui as _u
-from mat.dds_states import STATE_DDS_NOTIFY_NET_VIA
+import socket
+
+
+# make this code independent of mat library
+DDH_GUI_UDP_PORT = 12349
+STATE_DDS_NOTIFY_NET_VIA = 'net_via'
+
+
+_sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+
+def _u(s):
+    _sk.sendto(str(s).encode(), ('127.0.0.1', DDH_GUI_UDP_PORT))
 
 
 def _p(s):
