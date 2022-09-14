@@ -10,8 +10,8 @@ trap 'echo ‘$BASH_COMMAND’ TRAPPED! rv $?; cd $FOL_DDS' EXIT
 
 # fill AWS vars
 export DDH_AWS_NAME=p-joaquim
-export DDH_AWS_KEY_ID=AKIA2SU3QQX6R6S3IJMP
-export DDH_AWS_SECRET=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
+export DDH_AWS_KEY_ID=
+export DDH_AWS_SECRET=
 export DDH_AWS_SNS_TOPIC_ARN=arn:aws:sns:us-east-1:727249356285:demo-kaz-1234567-basics-topic
 export DDH_BOX_SERIAL_NUMBER=9999999
 
