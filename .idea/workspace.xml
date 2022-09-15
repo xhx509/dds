@@ -2,10 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="97673b0c-cb69-4042-9f58-1715bc626e53" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/dds/rn4020_xmodem.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dds/_ble_rn4020.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dds/ble_cc26x2.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble_cc26x2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dds/ble_rn4020.py" beforeDir="false" afterPath="$PROJECT_DIR$/dds/ble_rn4020.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dds/rn4020_xmodem.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/rn4020_xmodem.py" beforeDir="false" afterPath="$PROJECT_DIR$/../lowell-mat/mat/ble/bluepy/rn4020_xmodem.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../lowell-mat/mat/ddh_shared.py" beforeDir="false" afterPath="$PROJECT_DIR$/../lowell-mat/mat/ddh_shared.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -55,6 +56,27 @@
     </key>
   </component>
   <component name="RunManager" selected="Python.ble_rn4020">
+    <configuration name="_ble_rn4020" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="dds" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/dds" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/dds/_ble_rn4020.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="ble_cc26x2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="dds" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -139,30 +161,9 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="sqs" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="dds" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/dds" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/dds/sqs.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <list>
+      <item itemvalue="Python._ble_rn4020" />
       <item itemvalue="Python.ble_rn4020" />
-      <item itemvalue="Python.sqs" />
       <item itemvalue="Python.ble_cc26x2" />
       <item itemvalue="Python.dds" />
       <item itemvalue="Python.ddh" />
@@ -170,10 +171,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.ble_rn4020" />
+        <item itemvalue="Python._ble_rn4020" />
         <item itemvalue="Python.ble_cc26x2" />
         <item itemvalue="Python.dds" />
         <item itemvalue="Python.ddh" />
-        <item itemvalue="Python.sqs" />
       </list>
     </recent_temporary>
   </component>
