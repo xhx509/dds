@@ -14,7 +14,6 @@ from datetime import datetime
 from enum import Enum
 from dds.logs import lg_dds as lg
 from dds.utils import ble_progress_dl
-from mat.ble.bluepy.moana_logger_controller import utils_logger_is_moana
 
 
 NAME_FILTER = 'ZT-MOANA-0051'
@@ -22,6 +21,10 @@ VSP_RX_CHAR_UUID = '569a2001-b87f-490c-92cb-11ba5ea5167c'
 VSP_TX_CHAR_UUID = '569a2000-b87f-490c-92cb-11ba5ea5167c'
 
 _sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+
+def _utils_logger_is_moana(mac, info: str):
+    return 'MOANA' in info
 
 
 class OffloadState(Enum):
@@ -355,7 +358,7 @@ class MoanaBle:
 
 
 async def ble_interact_moana(mac, info, g):
-    if not utils_logger_is_moana(mac, info):
+    if not _utils_logger_is_moana(mac, info):
         return
 
     lg.a('interacting with Moana logger')
