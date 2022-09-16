@@ -8,7 +8,6 @@ from mat.ddh_shared import send_ddh_udp_gui as _u
 from dds.ble_scan import ble_scan_by_mac
 from dds.logs import lg_dds as lg
 from dds.utils import crc_local_vs_remote, ble_progress_dl, build_cmd
-from mat.ble.bluepy.cc26x2r_utils import utils_logger_is_cc26x2r
 from mat.ddh_shared import DDH_GUI_UDP_PORT, get_dl_folder_path_from_mac, \
     create_folder_logger_by_mac
 from mat.dds_states import STATE_DDS_REQUEST_PLOT
