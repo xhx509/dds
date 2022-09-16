@@ -21,11 +21,9 @@ sudo systemctl restart bluetooth
 sudo hciconfig hci0 up
 
 
-echo; echo 'R > permissions date / bluepy / ifmetric'
-BLUEPY_HELPER=$VENV/lib/python3.7/site-packages/bluepy/bluepy-helper
+echo; echo 'R > permissions date / ifmetric'
 sudo setcap CAP_SYS_TIME+ep /bin/date
 sudo setcap 'cap_net_raw,cap_net_admin+eip' /usr/sbin/ifmetric
-sudo setcap 'cap_net_raw,cap_net_admin+eip' $BLUEPY_HELPER
 
 
 echo; echo 'R > calling DDS main python code'
