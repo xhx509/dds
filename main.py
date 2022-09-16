@@ -58,11 +58,12 @@ if __name__ == '__main__':
     while 1:
         gps_tell_vessel_name()
         g = gps_measure()
-        if not g:
+
+        # if not g:
             # todo > test this
-            g = gps_get_cache()
-            if not g[0]:
-                continue
+            # g = gps_get_cache()
+            # if not g[0]:
+            #     continue
 
         lat, lon, tg, speed = g
         dds_log_tracking_add(lat, lon)
