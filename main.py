@@ -79,7 +79,7 @@ if __name__ == '__main__':
             args = [det, m_j, lat, lon, tg, h, h_d]
             ctx.ael.run_until_complete(ble_interact_w_logger(*args))
 
-        cnv_serve()
+        # cnv_serve()
         # sns_serve()
         # aws_serve()
         # sqs_serve()
