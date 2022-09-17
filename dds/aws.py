@@ -18,6 +18,9 @@ def _get_aws_bin_path():
     return 'aws'
 
 
+# todo > find all _ts or ts_ and make them OK and local
+
+
 def aws_serve():
     now = time.perf_counter()
     if ctx.ts_last_aws == 0:

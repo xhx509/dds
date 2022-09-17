@@ -6,12 +6,8 @@ from mat.dds_states import STATE_DDS_NOTIFY_NET_VIA
 
 def net_serve():
 
-    if not os.path.exists(PID_FILE_DDS):
-        v = 'inactive'
-        _u('{}/{}'.format(STATE_DDS_NOTIFY_NET_VIA, v))
+    if os.path.exists(PID_FILE_DDS):
+        # other states emitted by dds_sw_net_service.py
         return
 
-    else:
-        # the rest of states are emitted by the
-        # dds_sw_net_service.py code
-        pass
+    _u('{}/{}'.format(STATE_DDS_NOTIFY_NET_VIA, v))
