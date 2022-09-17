@@ -29,6 +29,7 @@ async def _ble_scan(h) -> tuple:
     rv = 0
 
     try:
+        # todo > use find_device_by_filter() or you cannot specify adapter hci1
         for d in await BleakScanner.discover(timeout=5):
             if _ble_is_supported_logger(d.name):
                 li[d.address.lower()] = d.name
