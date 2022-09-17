@@ -147,8 +147,12 @@ def gps_measure():
         return lat, lon, datetime.datetime.utcnow(), 1
 
     # real GPS measure
-    sp = serial.Serial(PORT_DATA, baudrate=115200, timeout=0.1, rtscts=True, dsrdtr=True)
+    sp = serial.Serial(PORT_DATA, baudrate=115200, timeout=0.2, rtscts=True, dsrdtr=True)
     till = time.perf_counter() + 2
+    sp.flushInput()
+
+    # todo > see if these 2 hurt
+    sp.readall()
     sp.flushInput()
 
     global _g_ts_cached_gps
