@@ -3,7 +3,7 @@ import time
 from bleak import BleakScanner, BleakClient, BleakError
 from datetime import datetime, timezone, timedelta
 from mat.ddh_shared import send_ddh_udp_gui as _u
-from dds.ble_scan import ble_scan_by_mac
+from dds.ble_scan import ble_scan_target_mac
 from dds.logs import lg_dds as lg
 from dds.utils import crc_local_vs_remote, ble_progress_dl, build_cmd
 from mat.dds_states import STATE_DDS_REQUEST_PLOT
@@ -58,7 +58,7 @@ class _BleRN4020:
         if self.cli and self.cli.is_connected:
             await self.cli.disconnect()
 
-        _d = await ble_scan_by_mac(mac)
+        _d = await ble_scan_target_mac(mac)
         try:
             if _d:
                 lg.a('connecting {}'.format(mac))

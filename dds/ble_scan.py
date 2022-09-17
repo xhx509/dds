@@ -1,47 +1,39 @@
 import asyncio
-import time
-
 from dds.hooks import hook_notify_ble_scan_exception
 from mat.ddh_shared import send_ddh_udp_gui as _u
-from dds.sns import sns_notify_ble_scan_exception
-from dds.utils import print_ble_scan_banner
 from mat.dds_states import *
 from bleak import BleakScanner, BleakError
+from bleak.backends.device import BLEDevice
 from dds.logs import lg_dds as lg
 
 
 def _ble_is_supported_logger(s):
-    # lt: logger types
-    lt = ['DO-2', 'DO-1', 'DO-X', 'MOANA', 'MAT-2W']
-    for t in lt:
+    logger_types = ['DO-2', 'DO-1', 'DO-X',
+                    'MOANA', 'MAT-2W', 'MATP-2W']
+    for t in logger_types:
         if t in s:
             return True
 
 
-# todo: do the hci thing here for bleak
-async def _ble_scan(h) -> tuple:
-    """ returns {mac: DO-X, mac2: MATP-2W}, ... """
+async def _ble_scan(h, t=5.0) -> tuple:
 
-    time.sleep(.1)
-    print_ble_scan_banner()
-    _u(STATE_DDS_BLE_SCAN)
-    li = {}
-    rv = 0
+    def _scan_cb(d: BLEDevice, _):
+        if _ble_is_supported_logger(d.name):
+            _dd[d.address.lower()] = d.name
 
     try:
-        # todo > use find_device_by_filter() or you cannot specify adapter hci1
-        # todo > you may need to update bleak and see BleakScanner class, adapter keyword
-        # todo > see example detection_callback.py
-        for d in await BleakScanner.discover(timeout=5):
-            if _ble_is_supported_logger(d.name):
-                li[d.address.lower()] = d.name
-        return rv, li
+        # todo: do hci thing, adapter keyword, may need newer version, see BleakScanner class
+        _dd = {}
+        scanner = BleakScanner(_scan_cb, None)
+        await scanner.start()
+        await asyncio.sleep(t)
+        await scanner.stop()
+        print('_dd ---->', _dd)
+        return 0, _dd
 
-    except (Exception, ) as e:
-        _u(STATE_DDS_BLE_HARDWARE_ERROR)
-        lg.a('error: exception -> {}'.format(e))
-        rv = 1
-        return rv, {}
+    except (asyncio.TimeoutError, BleakError, OSError):
+        lg.a('hardware error during scan')
+        return 1, {}
 
 
 async def ble_scan(_lat, _lon, _dt, _h, _h_desc):
@@ -56,7 +48,7 @@ async def ble_scan(_lat, _lon, _dt, _h, _h_desc):
     return det
 
 
-async def ble_scan_by_mac(mac, till=5, ad='hci0'):
+async def ble_scan_target_mac(mac, till=5, ad='hci0'):
     """ scan_by_mac, particular, generates device 'd' to connect """
 
     try:

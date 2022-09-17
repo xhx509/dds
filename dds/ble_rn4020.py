@@ -45,20 +45,7 @@ def _xmd_frame_check_crc(b):
     return calc_crc == rx_crc
 
 
-def _utils_logger_is_rn4020(mac, info: str):
-    a = '00:1E:C0'
-    if mac.startswith(a) or mac.startswith(a.lower()):
-        return True
-    if 'MATP-2W' in info:
-        return True
-
-
 async def ble_interact_rn4020(mac, info, g):
-    if not _utils_logger_is_rn4020(mac, info):
-        s = 'not interacting w/ logger CC26X2, info {}'
-        lg.a(s.format(info))
-        return
-
     s = 'interacting with RN4020 logger, info {}'
     lg.a(s.format(info))
     lc = BleRN4020()

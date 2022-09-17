@@ -23,10 +23,6 @@ VSP_TX_CHAR_UUID = '569a2000-b87f-490c-92cb-11ba5ea5167c'
 _sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
-def _utils_logger_is_moana(mac, info: str):
-    return 'MOANA' in info
-
-
 class OffloadState(Enum):
     CONNECT = 0
     AUTHENTICATE = 1

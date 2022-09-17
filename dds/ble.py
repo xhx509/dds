@@ -1,8 +1,8 @@
 import pathlib
 import shutil
-import traceback
 from dds.ble_cc26x2 import ble_interact_cc26x2
 from dds.ble_moana import ble_interact_moana
+from dds.ble_rn4020 import ble_interact_rn4020
 from dds.macs import macs_black, macs_orange, rm_mac_black, rm_mac_orange, add_mac_orange, add_mac_black, \
     is_mac_in_black, is_mac_in_orange
 from dds.hooks import hook_notify_logger_error
@@ -19,6 +19,22 @@ from settings.ctx import hook_ble_purge_this_mac_dl_files_folder, \
 TIME_IGNORE_TOO_ERROR = 600
 TIME_IGNORE_ONE_ERROR = 30
 g_logger_errors = {}
+
+
+def _ble_logger_is_cc26x2r(mac, info: str):
+    return 'DO-' in info
+
+
+def _ble_logger_is_moana(mac, info: str):
+    return 'MOANA' in info
+
+
+def _ble_logger_is_rn4020(mac, info):
+    a = '00:1E:C0'
+    if mac.startswith(a) or mac.startswith(a.lower()):
+        return True
+    if 'MATP-2W' in info:
+        return True
 
 
 def ble_show_monitored_macs():
@@ -93,34 +109,37 @@ async def _ble_interact_w_logger(mac, info: str, h, g):
         shutil.rmtree(str(p), ignore_errors=True)
 
     # variables
-    rv = 0
     lat, lon, dt = g
     sn = dds_get_json_mac_dns(mac)
     _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD, sn))
     lg.a('querying sensor {} / mac {}'.format(sn, mac))
-    s = 'history/add&{}&ok&{}&{}&{}'
 
-    try:
-        # -------------------------
-        # main logger interaction
-        # -------------------------
-        # await ble_interact_rn4020(mac, info, g)
-        await ble_interact_cc26x2(mac, info, g)
-        # await ble_interact_moana(mac, info, g)
+    # -------------------------
+    # main logger interaction
+    # -------------------------
+    if _ble_logger_is_cc26x2r(mac, info):
+        rv = await ble_interact_cc26x2(mac, info, g)
+    elif _ble_logger_is_rn4020(mac, info):
+        rv = await ble_interact_rn4020(mac, info, g)
+    elif _ble_logger_is_moana(mac, info, g):
+        rv = await ble_interact_moana(mac, info, g)
+    else:
+        lg.a('logger type unknown, should not happen')
+        return 1
+
+    if rv == 0:
+        lg.a('tell logger {}/{} went OK'.format(mac, sn))
         _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_OK, sn))
-
-    except (Exception, ) as ex:
-        e = 'error: exception {} -> {}'
-        lg.a(e.format(ex, traceback.format_exc()))
+        s = 'history/add&{}&ok&{}&{}&{}'
+    else:
+        lg.a('tell logger {}/{} gave error'.format(mac, sn))
         _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_ERROR, sn))
         s = 'history/add&{}&error&{}&{}&{}'
-        rv = 1
 
-    finally:
-        _u(s.format(sn, lat, lon, dt))
-        _ble_logger_result_to_sns(rv, mac, lat, lon)
-        _ble_logger_result_to_macs(rv, mac, lat, lon)
-        return rv
+    _u(s.format(sn, lat, lon, dt))
+    _ble_logger_result_to_sns(rv, mac, lat, lon)
+    _ble_logger_result_to_macs(rv, mac, lat, lon)
+    return rv
 
 
 async def ble_interact_w_logger(macs_det, macs_mon, _lat, _lon, _dt, _h, _h_desc):

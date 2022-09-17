@@ -1,7 +1,8 @@
 import datetime
 import time
 import serial
-from mat.dds_states import STATE_DDS_BLE_APP_GPS_ERROR_POSITION, STATE_DDS_NOTIFY_BOAT_NAME, STATE_DDS_NOTIFY_GPS, \
+from mat.dds_states import STATE_DDS_BLE_APP_GPS_ERROR_POSITION, \
+    STATE_DDS_NOTIFY_BOAT_NAME, STATE_DDS_NOTIFY_GPS, \
     STATE_DDS_NOTIFY_GPS_BOOT
 from mat.gps import PORT_CTRL, PORT_DATA
 from mat.utils import linux_is_rpi, linux_set_datetime
@@ -12,15 +13,16 @@ from mat.ddh_shared import send_ddh_udp_gui as _u, dds_get_json_vessel_name
 from dds.logs import lg_dds as lg
 
 
-GPS_CACHE_SECS = 30
+GPS_CACHE_VALID_SECS = 30
 
-g_ts_told_vessel = time.perf_counter()
-g_ts_told_gps = 0
-g_ts_gps = None
+_g_ts_told_vessel = time.perf_counter()
+_g_ts_cached_gps = 0
+_g_cached_gps = None
+_g_ts_gga = 0
 
 
 def gps_get_cache():
-    return g_ts_gps
+    return _g_cached_gps
 
 
 def _coord_decode(coord: str):
@@ -83,6 +85,28 @@ def _gps_parse_rmc_frame(data: bytes):
     return lat, lon, gps_time, speed
 
 
+def _gps_parse_gga_frame(data: bytes):
+    """ grab a long comma-separated string, parse fields """
+
+    if b'GPGGA' not in data:
+        return
+
+    # $GPGGA, time, lat, N, lon, W, 1, 07, 1.0, 9.0, M, , , , crc
+    data = data.decode()
+
+    # log satellites but not always
+    global _g_ts_gga
+    try:
+        n = int(data[7])
+        if time.perf_counter() > _g_ts_gga:
+            # todo > tell this to GUI
+            lg.a('{} satellites in view'.format(n))
+            _g_ts_gga = time.perf_counter() + 60
+
+    except (Exception, ) as ex:
+        print('_parse_gga_Frame exception', ex)
+
+
 def gps_connect_shield():
 
     if not cu.cell_shield_en:
@@ -127,13 +151,15 @@ def gps_measure():
     till = time.perf_counter() + 2
     sp.flushInput()
 
-    global g_ts_told_gps
-    global g_ts_gps
+    global _g_ts_cached_gps
+    global _g_cached_gps
 
     while 1:
         if time.perf_counter() > till:
             break
+
         b = sp.readall()
+        _gps_parse_gga_frame(b)
         g = _gps_parse_rmc_frame(b)
         if g:
             g = list(g)
@@ -143,21 +169,26 @@ def gps_measure():
                 g[3] = '0'
             # float, float, datetime UTC, speed
             _u('{}/{},{}'.format(STATE_DDS_NOTIFY_GPS, lat, lon))
-            g_ts_told_gps = time.perf_counter()
-            g_ts_gps = lat, lon, g[2], float(g[3])
-            return g_ts_gps
+            _g_ts_cached_gps = time.perf_counter()
+            _g_cached_gps = lat, lon, g[2], float(g[3])
+            return g
 
-    # failed, but use cache
+    # failed, but MAYBE use cache
+    if _g_ts_cached_gps == 0:
+        return
+
     now = time.perf_counter()
-    if g_ts_told_gps != 0 and now < g_ts_told_gps + GPS_CACHE_SECS:
-        lat, lon, dt_utc, speed = g_ts_gps
+    if now < _g_ts_cached_gps + GPS_CACHE_VALID_SECS:
+        lat, lon, dt_utc, speed = _g_cached_gps
         _u('{}/{},{}'.format(STATE_DDS_NOTIFY_GPS, lat, lon))
-        return lat, lon, dt_utc, speed
-    else:
-        g_ts_gps = '', '', None, float(0)
+        lg.a('using cached position {}, {}'.format(lat, lon))
+        return _g_cached_gps
 
-    # failed
+    # failed ...
     _u(STATE_DDS_BLE_APP_GPS_ERROR_POSITION)
+
+    # ... and also our GPS cache sucks
+    _g_cached_gps = '', '', None, float(0)
 
 
 def gps_clock_sync_if_so(dt_gps_utc):
@@ -203,14 +234,14 @@ def gps_wait_for_it_at_boot():
 
 
 def gps_tell_vessel_name():
-    global g_ts_told_vessel
+    global _g_ts_told_vessel
     now = time.perf_counter()
-    if g_ts_told_vessel + 10 < now:
+    if _g_ts_told_vessel + 10 < now:
         # too recent, leave
         return
     v = dds_get_json_vessel_name()
     _u('{}/{}'.format(STATE_DDS_NOTIFY_BOAT_NAME, v))
-    g_ts_told_vessel = time.perf_counter()
+    _g_ts_told_vessel = time.perf_counter()
 
 
 if __name__ == '__main__':

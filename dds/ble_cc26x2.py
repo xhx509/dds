@@ -5,7 +5,7 @@ import time
 from bleak import BleakScanner, BleakClient, BleakError
 from datetime import datetime, timezone, timedelta
 from mat.ddh_shared import send_ddh_udp_gui as _u
-from dds.ble_scan import ble_scan_by_mac
+from dds.ble_scan import ble_scan_target_mac
 from dds.logs import lg_dds as lg
 from dds.utils import crc_local_vs_remote, ble_progress_dl, build_cmd
 from mat.ddh_shared import DDH_GUI_UDP_PORT, get_dl_folder_path_from_mac, \
@@ -23,16 +23,12 @@ import humanize
 # todo > remove all lg.a() from here
 
 # new DO loggers
-# UUID_T = 'f000c0c2-0451-4000-b000-000000000000'
-# UUID_R = 'f000c0c1-0451-4000-b000-000000000000'
+UUID_T = 'f000c0c2-0451-4000-b000-000000000000'
+UUID_R = 'f000c0c1-0451-4000-b000-000000000000'
 
 # old DO loggers
-UUID_T = 'f0001132-0451-4000-b000-000000000000'
-UUID_R = 'f0001131-0451-4000-b000-000000000000'
-
-
-def _utils_logger_is_cc26x2r(mac, info: str):
-    return 'DO-' in info
+# UUID_T = 'f0001132-0451-4000-b000-000000000000'
+# UUID_R = 'f0001131-0451-4000-b000-000000000000'
 
 
 def _rae(rv, s):
@@ -199,6 +195,10 @@ class BleCC26X2:
             lg.a('speed {} KBps'.format(speed / 1000))
         return rv, self.ans
 
+    async def disconnect(self):
+        if self.cli and self.cli.is_connected:
+            await self.cli.disconnect()
+
     async def connect(self, mac):
         def cb_disc(_: BleakClient):
             lg.a("disconnected OK")
@@ -206,11 +206,7 @@ class BleCC26X2:
         def c_rx(_: int, b: bytearray):
             self.ans += b
 
-        # todo > see this makes sense
-        if self.cli and self.cli.is_connected:
-            await self.cli.disconnect()
-
-        _d = await ble_scan_by_mac(mac)
+        _d = await ble_scan_target_mac(mac)
         try:
             if _d:
                 lg.a('connecting {}'.format(mac))
@@ -313,16 +309,19 @@ class BleCC26X2:
 
 
 async def ble_interact_cc26x2(mac, info, g):
-    if not _utils_logger_is_cc26x2r(mac, info):
-        s = 'not interacting w/ logger CC26X2, info {}'
-        lg.a(s.format(info))
-        return
-
     s = 'interacting with CC26X2 logger, info {}'
     lg.a(s.format(info))
     lc = BleCC26X2()
-    if lc:
+
+    try:
         await lc.download_recipe(mac, g)
+        return 0
+
+    except (Exception, ) as ex:
+        print('--- exception', ex)
+        # todo > to this disconnect for moana and rn4020
+        await lc.disconnect()
+        return 1
 
 
 # test
