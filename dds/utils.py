@@ -11,8 +11,12 @@ from mat.dds_states import STATE_DDS_BLE_DOWNLOAD_PROGRESS
 
 
 g_tracking_path = ''
-g_last_time_track_log = time.perf_counter()
-g_ts_scan_banner = 0
+_g_ts_track_log = 0
+_g_ts_scan_banner = 0
+
+
+PERIOD_LOG_GPS_TRACK_SECS = 10
+PERIOD_LOG_BLE_SCAN_BANNER = 300
 
 
 # these NORMAL logs are local
@@ -44,28 +48,30 @@ def dds_log_tracking_add(lat, lon):
 
     assert g_tracking_path != ''
 
-    global g_last_time_track_log
+    global _g_ts_track_log
     now = time.perf_counter()
-    if g_last_time_track_log + 10 < now:
+    if now < _g_ts_track_log:
         # too recent, leave
         return
+    _g_ts_track_log = now + PERIOD_LOG_GPS_TRACK_SECS
 
-    if lat:
-        now = datetime.datetime.now().strftime('%m-%d-%y %H:%M:%S')
-        s = '{} | {}\n'.format(now, '{},{}'.format(lat, lon))
-        with open(g_tracking_path, 'a') as f:
-            f.write(s)
-        g_last_time_track_log = time.perf_counter()
+    if not lat:
+        return
+
+    now = datetime.datetime.now().strftime('%m-%d-%y %H:%M:%S')
+    s = '{} | {}\n'.format(now, '{},{}'.format(lat, lon))
+    with open(g_tracking_path, 'a') as f:
+        f.write(s)
 
 
 def print_ble_scan_banner():
-    global g_ts_scan_banner
+    global _g_ts_scan_banner
     now = time.perf_counter()
-    _first_banner = g_ts_scan_banner == 0
-    _expired_banner = now > g_ts_scan_banner + 300
-    if _first_banner or _expired_banner:
-        g_ts_scan_banner = now + 300
-        lg.a('scanning ...')
+    if now < _g_ts_scan_banner:
+        return
+
+    _g_ts_scan_banner = now + PERIOD_LOG_BLE_SCAN_BANNER
+    lg.a('scanning ...')
 
 
 def crc_local_vs_remote(path, remote_crc):

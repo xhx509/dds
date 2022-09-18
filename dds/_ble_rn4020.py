@@ -49,7 +49,7 @@ class _BleRN4020:
 
     async def connect(self, mac):
         def cb_disc(_: BleakClient):
-            lg.a("disconnected OK")
+            pass
 
         def c_rx(_: int, b: bytearray):
             self.ans += b
@@ -61,11 +61,10 @@ class _BleRN4020:
         _d = await ble_scan_target_mac(mac)
         try:
             if _d:
-                lg.a('connecting {}'.format(mac))
                 self.cli = BleakClient(_d, disconnected_callback=cb_disc)
                 if await self.cli.connect():
                     self.cli._mtu_size = 100
-                    lg.a('mtu {}'.format(self.cli.mtu_size))
+                    # print('mtu {}'.format(self.cli.mtu_size))
                     await self.cli.start_notify(UUID_RW, c_rx)
                     return 0
         except (asyncio.TimeoutError, BleakError, OSError) as er:
@@ -123,15 +122,12 @@ class _BleRN4020:
         if rv and not rv.endswith(b'\x04\n\r'):
             return 3, 'partial'
         ls = dir_ans_to_dict(rv, '*', match=True)
-        for s, z in ls.items():
-            lg.a('DIR file {} size {}'.format(s, z))
         return 0, ls
 
     async def cmd_xmodem(self, z):
-        # never used, dynamically resolves to a method
+        # never called, dynamically resolves to a method
         # in superclass BleRN4020 w/o leading '_' character
-        lg.a('error: this SHOULD never get called')
-        return 0, bytes()
+        return 1, bytes()
 
     async def cmd_sts(self):
         await self._cmd('STS \r')
@@ -182,9 +178,6 @@ class _BleRN4020:
             start = time.perf_counter()
             rv, data = await self.cmd_xmodem(size)
             _rae(rv, 'xmodem')
-            speed = size / (time.perf_counter() - start)
-            s = 'downloaded file {} OK, speed {} KBps'
-            lg.a(s.format(name, speed / 1000))
 
             # save file in our local disk
             # path = str(get_dl_folder_path_from_mac(mac) / name)
@@ -195,14 +188,15 @@ class _BleRN4020:
             # delete file in logger
             # rv = await self.cmd_del('18060DB_MATP_1Hz_(2).lid')
             # _rae(rv, 'del')
-            # lg.a('file {} deleted in logger OK'.format(name))
             # any_dl = True
+
+            # todo > tell file download OK with _u
 
         # if g:
         #     rv = await self.cmd_rws(g)
         #     _rae(rv, 'rws')
 
-        lg.a('logger {} download OK'.format(mac))
+        # todo > tell logger download OK with _u
 
         if self.cli and self.cli.is_connected:
             await self.cli.disconnect()

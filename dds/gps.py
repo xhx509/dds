@@ -10,15 +10,18 @@ from settings import ctx as cu
 from settings.ctx import hook_gps_dummy_measurement
 from tzlocal import get_localzone
 from mat.ddh_shared import send_ddh_udp_gui as _u, dds_get_json_vessel_name
-from dds.logs import lg_dds as lg
+from dds.logs import lg_gps as lg
 
 
-GPS_CACHE_VALID_SECS = 30
-
-_g_ts_told_vessel = time.perf_counter()
-_g_ts_cached_gps = 0
+_g_ts_told_vessel = 0
+_g_ts_cached_gps_valid_for = 0
 _g_cached_gps = None
 _g_ts_gga = 0
+
+
+PERIOD_GPS_CACHE_VALID_SECS = 30
+PERIOD_GPS_TELL_NUM_SATS_SECS = 300
+PERIOD_GPS_TELL_VESSEL_SECS = 30
 
 
 def gps_get_cache():
@@ -98,13 +101,14 @@ def _gps_parse_gga_frame(data: bytes):
     global _g_ts_gga
     try:
         n = int(data[7])
-        if time.perf_counter() > _g_ts_gga:
+        now = time.perf_counter()
+        if now > _g_ts_gga:
             # todo > tell this to GUI
             lg.a('{} satellites in view'.format(n))
-            _g_ts_gga = time.perf_counter() + 60
+            _g_ts_gga = now + PERIOD_GPS_TELL_NUM_SATS_SECS
 
     except (Exception, ) as ex:
-        print('_parse_gga_Frame exception', ex)
+        lg.a('error: parse GGA frame {}'.format(ex))
 
 
 def gps_connect_shield():
@@ -127,7 +131,7 @@ def gps_connect_shield():
     return rv
 
 
-def gps_measure():
+def _gps_measure():
     """
     returns (lat, lon, dt object, speed) or None
     for a dummy or real GPS measurement
@@ -136,11 +140,11 @@ def gps_measure():
     # hooks
     if cu.hook_gps_error_measurement_forced:
         _u(STATE_DDS_BLE_APP_GPS_ERROR_POSITION)
-        lg.a('[ GPS ] hook_gps_error_measurement_forced')
+        lg.a('debug: HOOK_GPS_ERROR_MEASUREMENT_FORCED')
         return
 
     if cu.hook_gps_dummy_measurement:
-        # l_d_('[ GPS ] hook_gps_dummy_measurement')
+        lg.a('debug: HOOK_GPS_DUMMY_MEASUREMENT')
         time.sleep(.5)
         lat = '{:+.6f}'.format(38.000000000)
         lon = '{:+.6f}'.format(-83.0)
@@ -155,8 +159,9 @@ def gps_measure():
     sp.readall()
     sp.flushInput()
 
-    global _g_ts_cached_gps
+    global _g_ts_cached_gps_valid_for
     global _g_cached_gps
+    now = time.perf_counter()
 
     while 1:
         if time.perf_counter() > till:
@@ -173,26 +178,34 @@ def gps_measure():
                 g[3] = '0'
             # float, float, datetime UTC, speed
             _u('{}/{},{}'.format(STATE_DDS_NOTIFY_GPS, lat, lon))
-            _g_ts_cached_gps = time.perf_counter()
+            _g_ts_cached_gps_valid_for = now + PERIOD_GPS_CACHE_VALID_SECS
             _g_cached_gps = lat, lon, g[2], float(g[3])
             return g
 
-    # failed, but MAYBE use cache
-    if _g_ts_cached_gps == 0:
+    # failed, and we have no cache
+    if _g_ts_cached_gps_valid_for == 0:
         return
 
+    # failed, we have GPS cache and is valid
     now = time.perf_counter()
-    if now < _g_ts_cached_gps + GPS_CACHE_VALID_SECS:
+    if now < _g_ts_cached_gps_valid_for:
         lat, lon, dt_utc, speed = _g_cached_gps
         _u('{}/{},{}'.format(STATE_DDS_NOTIFY_GPS, lat, lon))
         lg.a('using cached position {}, {}'.format(lat, lon))
         return _g_cached_gps
 
-    # failed ...
+    # failed, we have GPS cache but too old
+    _g_cached_gps = '', '', None, float(0)
+
+    # tell GUI
     _u(STATE_DDS_BLE_APP_GPS_ERROR_POSITION)
 
-    # ... and also our GPS cache sucks
-    _g_cached_gps = '', '', None, float(0)
+
+def gps_measure():
+    try:
+        return _gps_measure()
+    except (Exception, ) as ex:
+        lg.a('error: {}'.format(ex))
 
 
 def gps_clock_sync_if_so(dt_gps_utc):
@@ -201,7 +214,7 @@ def gps_clock_sync_if_so(dt_gps_utc):
     diff_secs = abs((dt_gps_utc - utc_now).total_seconds())
     if diff_secs < 60:
         return
-    lg.a('[ GPS ] diff_secs = {}'.format(diff_secs))
+    lg.a('debug: gps_cloc_sync_diff_secs = {}'.format(diff_secs))
 
     # use GPS time to sync local clock
     assert type(dt_gps_utc) is datetime.datetime
@@ -210,7 +223,7 @@ def gps_clock_sync_if_so(dt_gps_utc):
     dt_my = dt_gps_utc.replace(tzinfo=z_utc).astimezone(tz=z_my)
     t = str(dt_my)[:-6]
     if not linux_is_rpi():
-        lg.a('[ GPS ] not setting date on non-rpi')
+        # will not set date on non-rpi platforms
         return
     return linux_set_datetime(t)
 
@@ -244,12 +257,11 @@ def gps_wait_for_it_at_boot():
 def gps_tell_vessel_name():
     global _g_ts_told_vessel
     now = time.perf_counter()
-    if _g_ts_told_vessel + 10 < now:
-        # too recent, leave
+    if now < _g_ts_told_vessel:
         return
+    _g_ts_told_vessel = now + PERIOD_GPS_TELL_VESSEL_SECS
     v = dds_get_json_vessel_name()
     _u('{}/{}'.format(STATE_DDS_NOTIFY_BOAT_NAME, v))
-    _g_ts_told_vessel = time.perf_counter()
 
 
 if __name__ == '__main__':

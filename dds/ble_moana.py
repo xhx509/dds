@@ -1,5 +1,3 @@
-# todo > recall this cannot go on public repos because of ble_moana.py
-
 import socket
 import json
 import asyncio
@@ -304,11 +302,6 @@ class MoanaBle:
 
             if offload_state == OffloadState.AUTHENTICATE:
                 print('Status file changed to 0')
-
-                g = open(self.path + 'status.txt', 'w')
-                g.write('0')
-                g.close()
-
                 status = await self.authenticate()
                 offload_state = OffloadState.SYNC_TIME
             elif offload_state == OffloadState.SYNC_TIME:
@@ -328,7 +321,6 @@ class MoanaBle:
                 # await self.clear_data()
                 await self.disconnect()
                 offload_state = OffloadState.COMPLETE
-                # todo > remove this, but this same todo maybe wrong
                 break
 
         if offload_state == OffloadState.COMPLETE:
@@ -336,12 +328,7 @@ class MoanaBle:
             v = self.offload_file_size
             # force 100%
             ble_progress_dl(v, v)
-
-            # todo > why this? it was sleep 20
             time.sleep(5)
-            g = open(self.path + 'status.txt', 'w')
-            g.write('1')
-            g.close()
             print('Offload succeeded')
             return True
         else:
@@ -354,7 +341,7 @@ class MoanaBle:
 
 
 async def ble_interact_moana(mac, info, g):
-    lg.a('interacting with Moana logger')
+    lg.a('interacting with Moana logger, mac {}'.format(mac))
     lc = MoanaBle()
     if lc:
         await lc.download_recipe()

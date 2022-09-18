@@ -167,8 +167,6 @@ class BleCC26X2:
         if rv and not rv.endswith(b'\x04\n\r'):
             return 3, 'partial'
         ls = dir_ans_to_dict(rv, '*', match=True)
-        for s, z in ls.items():
-            lg.a('DIR file {} size {}'.format(s, z))
         return 0, ls
 
     async def cmd_dwl(self, z, ip='127.0.0.1', port=DDH_GUI_UDP_PORT) -> tuple:
@@ -177,7 +175,6 @@ class BleCC26X2:
         self.ans = bytes()
         n = math.ceil(z / 2048)
         ble_progress_dl(0, z, ip, port)
-        ts = time.perf_counter()
 
         for i in range(n):
             c = 'DWL {:02x}{}\r'.format(len(str(i)), i)
@@ -190,9 +187,6 @@ class BleCC26X2:
             # print('chunk #{} len {}'.format(i, len(self.ans)))
 
         rv = 0 if z == len(self.ans) else 1
-        if rv == 0:
-            speed = z / (time.perf_counter() - ts)
-            lg.a('speed {} KBps'.format(speed / 1000))
         return rv, self.ans
 
     async def disconnect(self):
@@ -201,7 +195,7 @@ class BleCC26X2:
 
     async def connect(self, mac):
         def cb_disc(_: BleakClient):
-            lg.a("disconnected OK")
+            pass
 
         def c_rx(_: int, b: bytearray):
             self.ans += b
@@ -209,12 +203,10 @@ class BleCC26X2:
         _d = await ble_scan_target_mac(mac)
         try:
             if _d:
-                lg.a('connecting {}'.format(mac))
                 self.cli = BleakClient(_d, disconnected_callback=cb_disc)
                 if await self.cli.connect():
                     # todo > check this MTU size matches firmware
                     self.cli._mtu_size = 244
-                    lg.a('mtu {}'.format(self.cli.mtu_size))
                     await self.cli.start_notify(UUID_T, c_rx)
                     return 0
         except (asyncio.TimeoutError, BleakError, OSError):
@@ -263,7 +255,6 @@ class BleCC26X2:
             _rae(rv, 'dwg')
             rv, d = await self.cmd_dwl(int(size))
             _rae(rv, 'dwl')
-            lg.a('downloaded file {} OK'.format(name))
             file_data = self.ans
 
             # calculate crc
@@ -273,10 +264,9 @@ class BleCC26X2:
             rv, r_crc = await self.cmd_crc(name)
             _rae(rv, 'crc')
             rv, l_crc = crc_local_vs_remote(path, r_crc)
-            s = 'file {} local CRC {} remote CRC {}'
-            lg.a(s.format(name, l_crc, r_crc))
             if (not rv) and os.path.exists(path):
-                lg.a('removing local file {} w/ bad CRC'.format(path))
+                # todo > tell _u removing local file w bad CRC
+                print('removing local file {} w/ bad CRC'.format(path))
                 os.unlink(path)
 
             # save file in our local disk
@@ -285,17 +275,18 @@ class BleCC26X2:
             with open(path, 'wb') as f:
                 f.write(file_data)
 
+            # todo > tell _u file downloaded OK
+
             # delete file in logger
             rv = await self.cmd_del(name)
             _rae(rv, 'del')
-            lg.a('file {} deleted in logger OK'.format(name))
             any_dl = True
 
         if g:
             rv = await self.cmd_rws(g)
             _rae(rv, 'rws')
 
-        lg.a('logger {} download OK'.format(mac))
+        # todo > tell _u all logger download OK
 
         if self.cli and self.cli.is_connected:
             await self.cli.disconnect()
@@ -309,17 +300,16 @@ class BleCC26X2:
 
 
 async def ble_interact_cc26x2(mac, info, g):
-    s = 'interacting with CC26X2 logger, info {}'
-    lg.a(s.format(info))
-    lc = BleCC26X2()
 
     try:
+        s = 'interacting with CC26X2 logger, info {}'
+        lg.a(s.format(info))
+        lc = BleCC26X2()
         await lc.download_recipe(mac, g)
         return 0
 
-    except (Exception) as ex:
-        print('--- exception', ex)
-        # todo > to this disconnect for moana and rn4020
+    except (Exception, ) as ex:
+        lg.a('error ble_interact_cc26x2 {}'.format(ex))
         await lc.disconnect()
         return 1
 

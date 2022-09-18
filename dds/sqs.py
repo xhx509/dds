@@ -12,16 +12,15 @@ from mat.ddh_shared import dds_get_json_mac_dns, \
     ddh_get_commit, \
     dds_get_commit, \
     dds_get_json_vessel_name
+from mat.utils import linux_is_rpi3, linux_is_rpi4
 
 
-# todo > maybe add a logger OK SQS message
+# todo > maybe add a logger OK SQS message when download did OK
 
 
 # -----------------
 # SQS credentials
 # -----------------
-from mat.utils import linux_is_rpi3, linux_is_rpi4
-
 session = boto3.Session(
     aws_access_key_id=os.getenv('DDH_AWS_KEY_ID'),
     aws_secret_access_key=os.getenv('DDH_AWS_SECRET')

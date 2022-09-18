@@ -6,6 +6,10 @@ from mat.dds_states import *
 from settings import ctx
 
 
+_g_ts_cnv = 0
+PERIOD_CNV_SECS = 600
+
+
 def _cnv(m):
     fol = str(get_dds_folder_path_dl_files())
     s = 'converting {} on fol {}'
@@ -15,16 +19,16 @@ def _cnv(m):
 
 
 def cnv_serve():
-    now = time.perf_counter()
-    if ctx.ts_last_cnv == 0:
-        lg.a('doing first conversion ever')
-    else:
-        # todo > set this time as constant somewhere
-        if ctx.ts_last_cnv + 30 > now:
-            return
-        lg.a('lets see if we have stuff to convert')
 
-    ctx.ts_last_cnv = now
+    global _g_ts_cnv
+    now = time.perf_counter()
+    if now < _g_ts_cnv:
+        return
+
+    if _g_ts_cnv == 0:
+        lg.a('doing first conversion ever')
+
+    _g_ts_cnv = now + PERIOD_CNV_SECS
     e = ''
 
     rv = _cnv('_DissolvedOxygen')

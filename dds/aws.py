@@ -18,20 +18,20 @@ def _get_aws_bin_path():
     return 'aws'
 
 
-# todo > find all _ts or ts_ and make them OK and local
+_g_ts_aws = 0
+PERIOD_AWS_S3_SECS = 600
 
 
 def aws_serve():
-    now = time.perf_counter()
-    if ctx.ts_last_aws == 0:
-        lg.a('doing first upload ever')
-    else:
-        # todo > set this time as constant somewhere
-        if ctx.ts_last_aws + 30 > now:
-            return
-        lg.a('lets see if we have stuff to upload')
 
-    ctx.ts_last_aws = now
+    global _g_ts_aws
+    now = time.perf_counter()
+    if now < _g_ts_aws:
+        return
+    if _g_ts_aws == 0:
+        lg.a('doing first upload ever')
+
+    _g_ts_aws = now + PERIOD_AWS_S3_SECS
 
     fol = get_dds_folder_path_dl_files()
     _k = os.getenv('DDH_AWS_KEY_ID')

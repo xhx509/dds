@@ -42,5 +42,5 @@ lg_aws = DDSLogs('aws')
 lg_cnv = DDSLogs('cnv')
 lg_sns = DDSLogs('sns')
 lg_sqs = DDSLogs('sqs')
-
+lg_gps = DDSLogs('gps')
 

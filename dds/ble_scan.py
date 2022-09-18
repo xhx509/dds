@@ -10,6 +10,7 @@ from dds.logs import lg_dds as lg
 
 
 _g_ts_ble_hw_error = 0
+PERIOD_BLE_TELL_HW_ERR_SECS = 600
 
 
 def _ble_is_supported_logger(s):
@@ -41,9 +42,10 @@ async def ble_scan(_lat, _lon, _dt, _h, _h_desc, t=5.0):
 
     except (asyncio.TimeoutError, BleakError, OSError) as ex:
         global _g_ts_ble_hw_error
-        if time.perf_counter() > _g_ts_ble_hw_error:
+        now = time.perf_counter()
+        if now > _g_ts_ble_hw_error:
             lg.a('hardware error during scan: {}'.format(ex))
-            _g_ts_ble_hw_error = time.perf_counter() + 300
+            _g_ts_ble_hw_error = now + PERIOD_BLE_TELL_HW_ERR_SECS
             # todo > pass antenna to this
             sqs_notify_ble_scan_exception(_lat, _lon)
         return {}

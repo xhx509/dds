@@ -96,8 +96,10 @@ if __name__ == '__main__':
                     gga = data.decode()
                     s = gga.split(',')
                     # index 6: quality indicator, 7: num of satellites
-                    if s[6] in ('1', '2'):
-                        ns = int(s[7])
+                    # if s[6] in ('1', '2'):
+                    #    ns = int(s[7])
+                    ns = int(s[7])
+                    print('[ OK ] GGA number satellites', ns)
 
                 if b'$GPRMC' in data:
                     rmc = data.decode()

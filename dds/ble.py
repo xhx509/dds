@@ -142,9 +142,9 @@ async def ble_interact_w_logger(macs_det, macs_mon, _lat, _lon, _dt, _h, _h_desc
     for mac, model in macs_det.items():
         if mac not in macs_mon:
             continue
-        if is_mac_in_black(mac, macs_black()):
+        if is_mac_in_black(mac):
             continue
-        if is_mac_in_orange(mac, macs_orange()):
+        if is_mac_in_orange(mac):
             continue
 
         # MAC passed all filters, work with it

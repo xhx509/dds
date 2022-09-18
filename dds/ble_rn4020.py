@@ -1,10 +1,6 @@
 import asyncio
 import datetime
 import socket
-import time
-
-# todo > try a couple more days or fuck it do it with bluepy as always
-
 from dds._ble_rn4020 import _BleRN4020, UUID_RW
 from dds.logs import lg_dds as lg
 from mat.ddh_shared import DDH_GUI_UDP_PORT

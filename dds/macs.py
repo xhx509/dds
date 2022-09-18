@@ -7,6 +7,9 @@ from mat.ddh_shared import get_dds_folder_path_macs, \
 from dds.logs import lg_dds as lg
 
 
+PERIOD_MACS_ORANGE_SECS = 15
+
+
 def _ble_get_color_macs(s) -> list:
     assert s in ('orange', 'black')
     valid = []
@@ -36,7 +39,7 @@ def _add_mac(c, mac):
     assert c in ('orange', 'black')
     ft = get_dds_loggers_forget_time()
     if c == 'orange':
-        ft = 15
+        ft = PERIOD_MACS_ORANGE_SECS
     t = int(time.time()) + ft
     fol = str(get_dds_folder_path_macs() / c)
     mac = mac.replace(':', '-')
@@ -63,12 +66,13 @@ def rm_mac_black(m): _rm_mac('black', m)
 def rm_mac_orange(m): _rm_mac('orange', m)
 
 
-def is_mac_in_black(m, b):
-    # b: [<path>/black/60-77-71-22-c8-6f', ...]
+def is_mac_in_black(m):
+    b = macs_black()
     m = m.replace(':', '-')
     return m in str(b)
 
 
-def is_mac_in_orange(m, o):
+def is_mac_in_orange(m):
+    o = macs_orange()
     m = m.replace(':', '-')
     return m in str(o)
