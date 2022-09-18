@@ -1,1 +1,0 @@
-{"reason": "DDH_ERROR_BLE_HARDWARE", "project": null, "vessel": "JOAQUIM_BOAT!", "ddh_commit": "cca80", "dds_commit": "500a0", "utc_time": "2022-09-18 03:30:22", "local_time": "2022-09-17 23:30:22", "box_sn": null, "hw_uptime": " 23:30:22 up 8 days,  9:09,  1 user,  load average: 0.39, 0.62, 0.66\n", "gps_position": "+38.000000,-83.000000", "platform": "dev"}
