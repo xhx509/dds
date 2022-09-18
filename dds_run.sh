@@ -19,6 +19,8 @@ export DDH_BOX_SERIAL_NUMBER=9999999
 echo; echo 'R > bluetooth sanity check'
 sudo systemctl restart bluetooth
 sudo hciconfig hci0 up
+sudo hciconfig hci1 up || true
+
 
 
 echo; echo 'R > permissions date / ifmetric'

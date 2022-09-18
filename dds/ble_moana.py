@@ -354,9 +354,6 @@ class MoanaBle:
 
 
 async def ble_interact_moana(mac, info, g):
-    if not _utils_logger_is_moana(mac, info):
-        return
-
     lg.a('interacting with Moana logger')
     lc = MoanaBle()
     if lc:

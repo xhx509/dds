@@ -10,4 +10,4 @@ def net_serve():
         # other states emitted by dds_sw_net_service.py
         return
 
-    _u('{}/{}'.format(STATE_DDS_NOTIFY_NET_VIA, v))
+    _u('{}/{}'.format(STATE_DDS_NOTIFY_NET_VIA, 'inactive'))

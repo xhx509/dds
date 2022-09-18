@@ -3,9 +3,9 @@ import glob
 import os
 from dds.macs import macs_black, macs_orange
 from mat.ddh_shared import send_ddh_udp_gui, ddh_get_disabled_ble_file_flag, dds_get_json_moving_speed, \
-    ddh_get_json_app_type, ddh_get_app_override_file_flag, dds_get_black_macs_purge_file_flag, get_dds_folder_path_sns, \
+    ddh_get_json_app_type, ddh_get_app_override_file_flag, dds_get_black_macs_purge_file_flag, \
     get_dds_folder_path_macs, get_dds_folder_path_macs_black, get_dds_folder_path_macs_orange, \
-    get_dds_folder_path_dl_files, get_dds_folder_path_logs
+    get_dds_folder_path_dl_files, get_dds_folder_path_logs, get_dds_folder_path_sqs
 from mat.dds_states import STATE_DDS_BLE_DISABLED, STATE_DDS_BLE_APP_GPS_ERROR_SPEED
 from mat.utils import linux_is_rpi
 import subprocess as sp
@@ -22,7 +22,6 @@ span_dict = None
 
 # AWS / SNS / SQS: enabled or not
 aws_en = True
-sns_en = True
 sqs_en = True
 
 
@@ -44,11 +43,6 @@ hook_ble_gdo_dummy_measurement = True
 hook_ble_purge_black_macs_on_boot = True
 hook_ble_purge_this_mac_dl_files_folder = False
 hook_ble_create_dummy_file = False
-
-
-# 0 to force
-ts_last_cnv = 0
-ts_last_aws = 0
 
 
 # to re-deploy
@@ -88,8 +82,8 @@ def dds_create_macs_color_folders():
     os.makedirs(r, exist_ok=True)
 
 
-def dds_create_sns_folder():
-    r = get_dds_folder_path_sns()
+def dds_create_sqs_folder():
+    r = get_dds_folder_path_sqs()
     os.makedirs(r, exist_ok=True)
 
 

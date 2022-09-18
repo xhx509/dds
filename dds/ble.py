@@ -5,7 +5,7 @@ from dds.ble_moana import ble_interact_moana
 from dds.ble_rn4020 import ble_interact_rn4020
 from dds.macs import macs_black, macs_orange, rm_mac_black, rm_mac_orange, add_mac_orange, add_mac_black, \
     is_mac_in_black, is_mac_in_orange
-from dds.hooks import hook_notify_logger_error
+from dds.sqs import sqs_notify_logger_max_errors, sqs_notify_logger_download
 from mat.ddh_shared import send_ddh_udp_gui as _u, dds_get_json_mac_dns, \
     get_dl_folder_path_from_mac, \
     dds_get_aws_has_something_to_do_flag, \
@@ -57,18 +57,14 @@ def _ble_set_aws_flag():
     lg.a('debug: flag ddh_aws_has_something_to_do set')
 
 
-def _ble_logger_result_to_sns(rv, mac, lat, lon):
-    if rv == 0:
-        return
-
-    hook_notify_logger_error('sns', mac, lat, lon)
-
-
-def _ble_logger_result_to_macs(rv, mac, lat, lon):
+def _ble_analyze_logger_result(rv, mac, lat, lon):
     if rv == 0:
         rm_mac_black(mac)
         rm_mac_orange(mac)
         add_mac_black(mac)
+        sqs_notify_logger_download(mac, lat, lon)
+        if mac in g_logger_errors.keys():
+            del g_logger_errors[mac]
         return
 
     if mac not in g_logger_errors:
@@ -79,14 +75,14 @@ def _ble_logger_result_to_macs(rv, mac, lat, lon):
 
     g_logger_errors[mac] += 1
     v = g_logger_errors[mac]
-    if v > 10:
-        v = 10
-        g_logger_errors[mac] = 0
 
-    if v == 10:
+    if v >= 10:
         rm_mac_orange(mac)
         add_mac_black(mac)
         _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_ERROR, mac))
+        sqs_notify_logger_max_errors(mac, lat, lon)
+        g_logger_errors[mac] = 0
+
     else:
         rm_mac_orange(mac)
         add_mac_orange(mac)
@@ -127,19 +123,18 @@ async def _ble_interact_w_logger(mac, info: str, h, g):
         lg.a('logger type unknown, should not happen')
         return 1
 
+    _ble_analyze_logger_result(rv, mac, lat, lon)
+
     if rv == 0:
+        _ble_set_aws_flag()
         lg.a('tell logger {}/{} went OK'.format(mac, sn))
         _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_OK, sn))
-        s = 'history/add&{}&ok&{}&{}&{}'
-    else:
-        lg.a('tell logger {}/{} gave error'.format(mac, sn))
-        _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_ERROR, sn))
-        s = 'history/add&{}&error&{}&{}&{}'
+        _u('history/add&{}&ok&{}&{}&{}'.format(sn, lat, lon, dt))
+        return
 
-    _u(s.format(sn, lat, lon, dt))
-    _ble_logger_result_to_sns(rv, mac, lat, lon)
-    _ble_logger_result_to_macs(rv, mac, lat, lon)
-    return rv
+    lg.a('tell logger {}/{} gave error'.format(mac, sn))
+    _u('{}/{}'.format(STATE_DDS_BLE_DOWNLOAD_ERROR, sn))
+    _u('history/add&{}&error&{}&{}&{}'.format(sn, lat, lon, dt))
 
 
 async def ble_interact_w_logger(macs_det, macs_mon, _lat, _lon, _dt, _h, _h_desc):
@@ -154,6 +149,4 @@ async def ble_interact_w_logger(macs_det, macs_mon, _lat, _lon, _dt, _h, _h_desc
 
         # MAC passed all filters, work with it
         g = (_lat, _lon, _dt)
-        rv = await _ble_interact_w_logger(mac, model, _h, g)
-        if rv == 0:
-            _ble_set_aws_flag()
+        await _ble_interact_w_logger(mac, model, _h, g)

@@ -317,7 +317,7 @@ async def ble_interact_cc26x2(mac, info, g):
         await lc.download_recipe(mac, g)
         return 0
 
-    except (Exception, ) as ex:
+    except (Exception) as ex:
         print('--- exception', ex)
         # todo > to this disconnect for moana and rn4020
         await lc.disconnect()

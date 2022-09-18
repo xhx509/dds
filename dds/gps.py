@@ -220,21 +220,25 @@ def gps_wait_for_it_at_boot():
     # Wikipedia: GPS-Time-To-First-Fix for cold start is typ.
     # 2 to 4 minutes, warm <= 45 secs, hot <= 22 secs
 
-    till = time.perf_counter() + 300
-    progress_till = time.perf_counter()
+    t = 300
+    till = time.perf_counter() + t
+    s = 'wait up to {} seconds for GPS at boot'
+    lg.a(s.format(t))
 
-    while time.perf_counter() < till:
-        _ = till - progress_till
+    while 1:
+        t = time.perf_counter()
+        if t > till:
+            return '', '', None, 0
 
-        _u('{}/{}'.format(STATE_DDS_NOTIFY_GPS_BOOT, _))
+        t = int(till - time.perf_counter())
+        _u('{}/{}'.format(STATE_DDS_NOTIFY_GPS_BOOT, t))
 
         g = gps_measure()
         if g:
-            # lat, lon, datetime UTC, speed
             return g
-        time.sleep(1)
-
-    return '', '', None, 0
+        s = '{} seconds left to wait for GPS at boot'
+        lg.a(s.format(t))
+        time.sleep(5)
 
 
 def gps_tell_vessel_name():
