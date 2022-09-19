@@ -22,6 +22,7 @@ _g_ts_gga = 0
 PERIOD_GPS_CACHE_VALID_SECS = 30
 PERIOD_GPS_TELL_NUM_SATS_SECS = 300
 PERIOD_GPS_TELL_VESSEL_SECS = 30
+PERIOD_GPS_AT_BOOT_SECS = 10
 
 
 def gps_get_cache():
@@ -168,7 +169,7 @@ def _gps_measure():
             break
 
         b = sp.readall()
-        _gps_parse_gga_frame(b)
+        # _gps_parse_gga_frame(b)
         g = _gps_parse_rmc_frame(b)
         if g:
             g = list(g)
@@ -233,10 +234,9 @@ def gps_wait_for_it_at_boot():
     # Wikipedia: GPS-Time-To-First-Fix for cold start is typ.
     # 2 to 4 minutes, warm <= 45 secs, hot <= 22 secs
 
-    t = 300
-    till = time.perf_counter() + t
+    till = time.perf_counter() + PERIOD_GPS_AT_BOOT_SECS
     s = 'wait up to {} seconds for GPS at boot'
-    lg.a(s.format(t))
+    lg.a(s.format(PERIOD_GPS_AT_BOOT_SECS))
 
     while 1:
         t = time.perf_counter()

@@ -52,25 +52,29 @@ if __name__ == '__main__':
 
     gps_connect_shield()
     gps_wait_for_it_at_boot()
-    lat, lon, tg, speed = gps_measure()
-    gps_clock_sync_if_so(tg)
-
-    # hook_notify_ddh_booted('sns', lat, lon)
+    g = gps_measure()
+    if g:
+        lat, lon, tg, speed = g
+        gps_clock_sync_if_so(tg)
+        # hook_notify_ddh_booted('sns', lat, lon)
 
     while 1:
+
+        # GPS stage
         gps_tell_vessel_name()
         g = gps_measure()
-
         # if not g:
             # todo > test this
             # g = gps_get_cache()
-            # if not g[0]:
-            #     continue
-
+        if not g:
+            lg.a('no GPS, will not interact w/ loggers')
+            time.sleep(5)
+            continue
         lat, lon, tg, speed = g
         dds_log_tracking_add(lat, lon)
         gps_clock_sync_if_so(tg)
 
+        # BLE stage
         if op_conditions_met(speed):
             h, h_d = ble_get_antenna_type()
 
