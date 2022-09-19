@@ -62,6 +62,8 @@ def _msg_dequeue(q, n=10, t=5):
     print(s.format(n, len(msgs)))
     return msgs
 
+# todo > remove any non-needed SNS statement from this project
+
 
 def sqs_ws():
     q = sqs.get_queue_by_name(QueueName=SQS_UP_QUEUE_NAME)
