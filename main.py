@@ -90,4 +90,4 @@ if __name__ == '__main__':
         # sns_serve()
         # aws_serve()
         # sqs_serve()
-        net_serve()
+        # net_serve()
