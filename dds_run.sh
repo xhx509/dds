@@ -16,9 +16,10 @@ export DDH_AWS_SNS_TOPIC_ARN=arn:aws:sns:us-east-1:727249356285:demo-kaz-1234567
 export DDH_BOX_SERIAL_NUMBER=9999999
 
 
-echo; echo 'R > bluetooth sanity check'
+echo; echo 'R > bluetooth sanity check for hci0'
 sudo systemctl restart bluetooth
 sudo hciconfig hci0 up
+echo; echo 'R > bluetooth sanity check for hci1'
 sudo hciconfig hci1 up || true
 
 
