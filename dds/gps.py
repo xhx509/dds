@@ -127,6 +127,7 @@ def gps_connect_shield():
     sp.write(b'AT+QGPS=1\r')
     ans = sp.readlines()
     rv = (b'+CME ERROR: 504\r\n' in ans) or b'OK\r\n' in ans
+    lg.a('gps_connect_shield answer: {}'.format(ans))
     sp.close()
     time.sleep(0.5)
     return rv
@@ -183,11 +184,11 @@ def _gps_measure():
             _g_cached_gps = lat, lon, g[2], float(g[3])
             return g
 
-    # failed, and we have no cache
     if _g_ts_cached_gps_valid_for == 0:
+        lg.a('failed, and no cache ever yet')
         return
 
-    # failed, we have GPS cache and is valid
+    # failed, but we have GPS cache and is valid
     now = time.perf_counter()
     if now < _g_ts_cached_gps_valid_for:
         lat, lon, dt_utc, speed = _g_cached_gps
@@ -195,7 +196,7 @@ def _gps_measure():
         lg.a('using cached position {}, {}'.format(lat, lon))
         return _g_cached_gps
 
-    # failed, we have GPS cache but too old
+    lg.a('failed, and cache is too old')
     _g_cached_gps = '', '', None, float(0)
 
     # tell GUI
@@ -243,15 +244,17 @@ def gps_wait_for_it_at_boot():
         if t > till:
             return '', '', None, 0
 
+        # todo > do this state at GUI
         t = int(till - time.perf_counter())
         _u('{}/{}'.format(STATE_DDS_NOTIFY_GPS_BOOT, t))
 
         g = gps_measure()
         if g:
             return g
+        lg.a('gps_wait_at_boot returned {}'.format(g))
         s = '{} seconds left to wait for GPS at boot'
         lg.a(s.format(t))
-        time.sleep(5)
+        time.sleep(1)
 
 
 def gps_tell_vessel_name():

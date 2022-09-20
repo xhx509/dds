@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../ddf/.idea/ddf.iml" filepath="$PROJECT_DIR$/../ddf/.idea/ddf.iml" />
       <module fileurl="file://$PROJECT_DIR$/../ddh/.idea/ddh.iml" filepath="$PROJECT_DIR$/../ddh/.idea/ddh.iml" />
       <module fileurl="file://$PROJECT_DIR$/../ddh_tools/.idea/ddh_tools.iml" filepath="$PROJECT_DIR$/../ddh_tools/.idea/ddh_tools.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/dds.iml" filepath="$PROJECT_DIR$/.idea/dds.iml" />

@@ -8,6 +8,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="lowell-mat" />
     <orderEntry type="module" module-name="ddh_tools" />
+    <orderEntry type="module" module-name="ddf" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="format" value="PLAIN" />
